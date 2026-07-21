@@ -1,66 +1,59 @@
 # Popup Builder
 
-JSON-driven popup modals: a **renderer** that turns a popup JSON into a working modal, and a **builder** that lets you author, save, and edit those JSONs visually. The two are independent — the builder produces JSON, the renderer consumes it — so you can use either on its own.
+JSON-driven popup modals: a **renderer** that turns a popup JSON into a working modal, and a visual **builder** for authoring that JSON. The two are independent — the builder outputs JSON, the renderer consumes it — so you can use either on its own.
 
-The JSON contract lives in [`POPUP-COMPONENT-JSON-SCHEMA.md`](./POPUP-COMPONENT-JSON-SCHEMA.md) and is implemented as shared TypeScript in `src/schema`.
-
-## Layout
-
-```
-src/
-  schema/     Shared source of truth: TS types, factories, runtime validation.
-  renderer/   Consumes a PopupModal JSON. Split into two halves:
-                - PopupContent  → pure rendering (design + contentItems + submit)
-                - PopupMount    → the mount layer (trigger, frequency, dismiss, placement)
-                - mountPopup    → vanilla loader for embedding on a storefront
-  builder/    The authoring UI. Zustand store holds the array of popup JSONs
-              (persisted to localStorage); editor menus build each JSON part;
-              a live preview reuses the real renderer.
-```
-
-### Mount vs. render — the deliberate split
-
-- **Render** (`PopupContent`) knows only how to draw a popup: it reads `design`, `imageUrl`, `contentItems`, and handles the submit + `onSuccess`/`onError`. It has no idea when or why it appeared.
-- **Mount** (`PopupMount`) owns *delivery*: `trigger` (when to open), `frequency` (localStorage cap), `dismissible` (X / overlay / esc), and `htmlId` (inline vs. full-page overlay). It decides when to render `PopupContent`.
-
-This means the builder can force-open `PopupContent` for a live preview without any trigger/frequency logic getting in the way, and the storefront gets the full mount behavior via `mountPopup`.
-
-## Run the builder
+## Quick start
 
 ```bash
 npm install
-npm run dev      # opens the builder
-npm run build    # typecheck + production build
-npm run typecheck
+npm run dev        # builder at http://localhost:5173/
+                   # renderer demo at http://localhost:5173/demo.html
+npm run build      # typecheck + production build
 ```
 
-## Use the renderer standalone
+## Using the renderer
+
+Drive everything from a popup JSON (shape defined in [`POPUP-COMPONENT-JSON-SCHEMA.md`](./POPUP-COMPONENT-JSON-SCHEMA.md)). Three entry points, from most to least batteries-included:
 
 ```ts
-import { mountPopup } from './src/renderer';
+import { mountPopup, PopupMount, PopupContent } from './src/renderer';
+```
 
-const handle = mountPopup(popupJson);   // wires up trigger, frequency, placement
+- **`mountPopup(json)`** — for a storefront/plain page. Wires up the trigger, frequency cap, and placement (overlay, or inline if `htmlId` matches an element), then renders when appropriate. Returns `{ unmount() }`.
+- **`<PopupMount popup={json} />`** — the same mount behavior as a React component.
+- **`<PopupContent popup={json} />`** — just the drawing (design + fields + submit); no trigger/frequency logic. You control when it shows.
+
+```ts
+const handle = mountPopup(popupJson);
 // handle.unmount() to tear down
 ```
 
-Or drive rendering directly in a React app:
+The renderer injects its own styles on first render, so it's self-contained — no CSS import needed at the call site. See `src/renderer/demo.ts` for a complete standalone example.
 
-```tsx
-import { PopupMount } from './src/renderer';
+## Using the builder
 
-<PopupMount popup={popupJson} />
-```
+`npm run dev` opens the builder. It has two parts:
 
-See `src/renderer/embed-example.tsx` for a full storefront example.
+- **Saving view** — a list of your saved templates. Create one, or click a row to edit. Delete lives per-row here.
+- **Editing view** — a menu on the left (delivery, design, submission, and content items via the **+ Add section** button), a live preview on the right, and **View JSON** to see/copy the result.
 
-## Get the JSON out of the builder
-
-The builder store exposes the array of saved popups:
+Templates are persisted to `localStorage` via a Zustand store. To get the JSON out: **View JSON → Copy** on any template, or read the array directly:
 
 ```ts
 import { getAllPopups } from './src/builder/store';
-
-const popups = getAllPopups();   // PopupModal[] — hand any of these to the renderer
+const popups = getAllPopups();   // PopupModal[] — hand any to the renderer
 ```
 
-The UI also has **Export all / Import** buttons and a per-popup **Copy JSON**.
+## Project structure
+
+```
+src/
+  schema/     Shared source of truth: TypeScript types, factories, validation.
+  renderer/   Consumes a PopupModal JSON. Split into two halves:
+                PopupContent  → pure rendering (design + fields + submit)
+                PopupMount    → mount layer (trigger, frequency, dismiss, placement)
+                mountPopup    → vanilla loader for embedding anywhere
+  builder/    The authoring UI (Zustand store + editor + live preview).
+```
+
+The **schema** is imported by both halves, so the renderer and builder can never drift on the data shape.
