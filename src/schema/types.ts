@@ -31,6 +31,7 @@ export type RequestTarget = 'header' | 'body';
 export interface StyleProps {
   align?: 'left' | 'center' | 'right';
   color?: string;
+  backgroundColor?: string;
 }
 
 export interface PopupOption {
@@ -43,8 +44,10 @@ export interface OnSubmitRequest {
   key?: string;
 }
 
-export interface OnSubmitBenefits {
-  benefitId?: string;
+/** A static extra key/value pair sent with every submit (custom submit values). */
+export interface CallbackPayloadEntry {
+  key: string;
+  value: string;
 }
 
 export interface ContentItem {
@@ -56,7 +59,6 @@ export interface ContentItem {
   options?: PopupOption[];
   required?: boolean;
   onSubmitRequest?: OnSubmitRequest;
-  onSubmitBenefits?: OnSubmitBenefits;
 }
 
 export type SubmitSuccess =
@@ -80,12 +82,14 @@ export interface PopupModal {
   method: 'GET' | 'POST';
   trigger: PopupTrigger;
   design: PopupDesign;
+  borderRadius?: number;
   imageUrl?: string;
   htmlId?: string;
   dismissible?: boolean;
   frequency?: PopupFrequency;
   onSuccess?: SubmitSuccess;
   onError?: SubmitError;
+  onSubmitCallbackPayload?: CallbackPayloadEntry[];
   contentItems: ContentItem[];
 }
 

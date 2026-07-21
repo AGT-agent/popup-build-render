@@ -10,13 +10,14 @@ export const POPUP_CSS = `
 }
 .pm-card {
   position: relative; box-sizing: border-box;
+  display: flex; flex-direction: column;
   background: #fff; color: #111827; border-radius: 14px;
   box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-  width: 100%; max-width: 460px; overflow: hidden;
+  width: 100%; max-width: 520px; min-height: 350px; overflow: hidden;
   font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
 }
 .pm-card.pm-has-image { max-width: 720px; }
-.pm-layout { display: flex; }
+.pm-layout { display: flex; flex: 1; }
 .pm-layout.pm-image-left { flex-direction: row; }
 .pm-layout.pm-image-right { flex-direction: row-reverse; }
 .pm-media { flex: 1 1 45%; min-height: 240px; background-size: cover; background-position: center; }
@@ -41,7 +42,7 @@ export const POPUP_CSS = `
 .pm-radio-group { display: flex; flex-direction: column; gap: 8px; }
 .pm-radio-option, .pm-checkbox { display: flex; align-items: center; gap: 8px; cursor: pointer; }
 .pm-submit {
-  padding: 12px 16px; border: none; border-radius: 8px; cursor: pointer;
+  margin-top: auto; padding: 12px 16px; border: none; border-radius: 8px; cursor: pointer;
   background: #111827; color: #fff; font-size: 15px; font-weight: 600;
 }
 .pm-submit:disabled { opacity: 0.6; cursor: default; }

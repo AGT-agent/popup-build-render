@@ -2,6 +2,7 @@ import {
   DESIGNS,
   FREQUENCIES,
   designUsesImage,
+  type CallbackPayloadEntry,
   type PopupDesign,
   type PopupFrequency,
   type PopupModal,
@@ -104,6 +105,16 @@ export function SettingsEditor({ popup, onChange }: Props) {
               {DESIGNS.map((d) => <option key={d} value={d}>{d}</option>)}
             </select>
           </div>
+          <div className="field-row">
+            <label>Border radius (px)</label>
+            <input
+              type="number"
+              min={0}
+              placeholder="14"
+              value={popup.borderRadius ?? ''}
+              onChange={(e) => onChange({ borderRadius: e.target.value === '' ? undefined : Number(e.target.value) })}
+            />
+          </div>
           {designUsesImage(popup.design) && (
             <div className="field-row">
               <label>Image URL</label>
@@ -154,8 +165,47 @@ export function SettingsEditor({ popup, onChange }: Props) {
             onChange={(e) => onChange({ onError: e.target.value ? { type: 'message', text: e.target.value } : undefined })}
           />
         </div>
+
+        <CustomSubmitValues
+          entries={popup.onSubmitCallbackPayload}
+          onChange={(entries) => onChange({ onSubmitCallbackPayload: entries.length ? entries : undefined })}
+        />
       </div>
     </>
+  );
+}
+
+function CustomSubmitValues({
+  entries,
+  onChange,
+}: {
+  entries?: CallbackPayloadEntry[];
+  onChange: (entries: CallbackPayloadEntry[]) => void;
+}) {
+  const rows = entries ?? [];
+
+  return (
+    <div className="field-row">
+      <label>Custom submit values</label>
+      {rows.map((row, i) => (
+        <div key={i} className="field-row inline" style={{ marginBottom: 6 }}>
+          <input
+            type="text"
+            placeholder="key"
+            value={row.key}
+            onChange={(e) => onChange(rows.map((r, j) => (j === i ? { ...r, key: e.target.value } : r)))}
+          />
+          <input
+            type="text"
+            placeholder="value"
+            value={row.value}
+            onChange={(e) => onChange(rows.map((r, j) => (j === i ? { ...r, value: e.target.value } : r)))}
+          />
+          <button className="ghost danger" onClick={() => onChange(rows.filter((_, j) => j !== i))}>✕</button>
+        </div>
+      ))}
+      <button className="ghost" onClick={() => onChange([...rows, { key: '', value: '' }])}>+ value</button>
+    </div>
   );
 }
 

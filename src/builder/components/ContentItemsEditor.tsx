@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import {
   CONTENT_TYPES,
   isInputType,
@@ -17,7 +18,12 @@ export function ContentItemsEditor({ popup, onChange }: Props) {
   const items = [...popup.contentItems].sort((a, b) => a.order - b.order);
 
   const commit = (next: ContentItem[]) => {
-    onChange({ contentItems: next.map((it, i) => ({ ...it, order: i })) });
+    // Submit buttons always sink to the bottom; everything else keeps its order.
+    const normalized = [
+      ...next.filter((it) => it.type !== 'submit-button'),
+      ...next.filter((it) => it.type === 'submit-button'),
+    ];
+    onChange({ contentItems: normalized.map((it, i) => ({ ...it, order: i })) });
   };
 
   const addItem = (type: ContentType) => {
@@ -54,11 +60,35 @@ export function ContentItemsEditor({ popup, onChange }: Props) {
         />
       ))}
 
-      <div className="add-menu">
-        {CONTENT_TYPES.map((t) => (
-          <button key={t} onClick={() => addItem(t)}>+ {t}</button>
-        ))}
-      </div>
+      <AddSectionButton onAdd={addItem} />
+    </div>
+  );
+}
+
+function AddSectionButton({ onAdd }: { onAdd: (type: ContentType) => void }) {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <div className="add-section">
+      {open && <div className="add-backdrop" onClick={() => setOpen(false)} />}
+      {open && (
+        <div className="add-menu-popover">
+          {CONTENT_TYPES.map((t) => (
+            <button
+              key={t}
+              onClick={() => {
+                onAdd(t);
+                setOpen(false);
+              }}
+            >
+              {t}
+            </button>
+          ))}
+        </div>
+      )}
+      <button className="add-plus" aria-label="Add section" onClick={() => setOpen((o) => !o)}>
+        + Add section
+      </button>
     </div>
   );
 }
@@ -80,8 +110,12 @@ function ItemCard({ item, index, count, onMove, onRemove, onUpdate }: ItemCardPr
       <div className="item-head">
         <span className="item-type">{item.type}</span>
         <div className="item-order-btns">
-          <button className="ghost" disabled={index === 0} onClick={() => onMove(index, -1)}>↑</button>
-          <button className="ghost" disabled={index === count - 1} onClick={() => onMove(index, 1)}>↓</button>
+          {item.type !== 'submit-button' && (
+            <>
+              <button className="ghost" disabled={index === 0} onClick={() => onMove(index, -1)}>↑</button>
+              <button className="ghost" disabled={index === count - 1} onClick={() => onMove(index, 1)}>↓</button>
+            </>
+          )}
           <button className="ghost danger" onClick={() => onRemove(item.id)}>✕</button>
         </div>
       </div>
@@ -121,6 +155,16 @@ function ItemCard({ item, index, count, onMove, onRemove, onUpdate }: ItemCardPr
               onChange={(e) => onUpdate(item.id, { styleProps: { ...item.styleProps, color: e.target.value || undefined } })}
             />
           </div>
+          {item.type === 'submit-button' && (
+            <div className="field-row">
+              <label>Background color</label>
+              <input
+                type="text"
+                value={item.styleProps?.backgroundColor ?? ''}
+                onChange={(e) => onUpdate(item.id, { styleProps: { ...item.styleProps, backgroundColor: e.target.value || undefined } })}
+              />
+            </div>
+          )}
         </div>
       )}
 

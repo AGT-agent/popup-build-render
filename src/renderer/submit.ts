@@ -69,6 +69,13 @@ export function assembleRequest(popup: PopupModal, values: FormValues): Assemble
     }
   }
 
+  // Static custom submit values — merged into body (or query for GET).
+  for (const entry of popup.onSubmitCallbackPayload ?? []) {
+    if (!entry.key) continue;
+    if (popup.method === 'GET') query[entry.key] = entry.value;
+    else bodyObj[entry.key] = entry.value;
+  }
+
   let url = popup.url;
   const qs = new URLSearchParams(query).toString();
   if (qs) url += (url.includes('?') ? '&' : '?') + qs;

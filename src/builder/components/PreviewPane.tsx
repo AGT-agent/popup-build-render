@@ -16,7 +16,7 @@ export function PreviewPane({ popup }: { popup: PopupModal }) {
   const mockFetch = useMemo(makeMockFetch, []);
 
   return (
-    <div>
+    <div className="preview-wrap">
       <div className="toolbar" style={{ marginBottom: 8 }}>
         <span className="pill">Live preview</span>
         <button onClick={() => setReplayKey((k) => k + 1)}>↻ Replay</button>

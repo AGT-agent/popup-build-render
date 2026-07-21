@@ -17,6 +17,7 @@ function toStyle(sp?: StyleProps): CSSProperties {
   return {
     textAlign: sp?.align ?? 'center',
     ...(sp?.color ? { color: sp.color } : {}),
+    ...(sp?.backgroundColor ? { backgroundColor: sp.backgroundColor } : {}),
   };
 }
 
@@ -158,6 +159,8 @@ export function PopupContent({ popup, onClose, fetchImpl, preview }: PopupConten
   }
 
   const usesImage = designUsesImage(popup.design);
+  // Only the side-by-side layouts get the wider card; image-behind stays basic width.
+  const sideBySide = popup.design === 'image-left' || popup.design === 'image-right';
   const layoutClass = `pm-layout pm-${popup.design}`;
 
   const media = usesImage && popup.imageUrl ? (
@@ -167,7 +170,12 @@ export function PopupContent({ popup, onClose, fetchImpl, preview }: PopupConten
   const body = <div className="pm-body">{renderPhaseBody(phase, items, renderItem, onClose)}</div>;
 
   return (
-    <div className={`pm-card${usesImage ? ' pm-has-image' : ''}`} role="dialog" aria-modal="true">
+    <div
+      className={`pm-card${sideBySide ? ' pm-has-image' : ''}`}
+      role="dialog"
+      aria-modal="true"
+      style={popup.borderRadius != null ? { borderRadius: popup.borderRadius } : undefined}
+    >
       {popup.dismissible !== false && (
         <button className="pm-close" aria-label="Close" onClick={() => onClose?.()}>×</button>
       )}
@@ -206,10 +214,10 @@ function SuccessView({ outcome, onClose }: { outcome: SubmitOutcome; onClose?: (
   if (!success) return null;
 
   if (success.type === 'message') {
-    return <p className="pm-text">{success.text}</p>;
+    return <p className="pm-text" style={{ textAlign: 'center' }}>{success.text}</p>;
   }
   if (success.type === 'redirect') {
-    return <p className="pm-text">Redirecting…</p>;
+    return <p className="pm-text" style={{ textAlign: 'center' }}>Redirecting…</p>;
   }
   if (success.type === 'coupon') {
     const code = outcome.couponCode ?? success.code;
