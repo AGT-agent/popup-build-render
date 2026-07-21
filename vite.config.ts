@@ -12,4 +12,13 @@ export default defineConfig({
       '@renderer': fileURLToPath(new URL('./src/renderer/index.ts', import.meta.url)),
     },
   },
+  build: {
+    rollupOptions: {
+      input: {
+        // The builder app (default) and the standalone renderer demo page.
+        main: fileURLToPath(new URL('./index.html', import.meta.url)),
+        demo: fileURLToPath(new URL('./demo.html', import.meta.url)),
+      },
+    },
+  },
 });

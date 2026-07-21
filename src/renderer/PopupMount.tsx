@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import type { PopupModal } from '@schema';
 import { PopupContent } from './PopupContent';
 import { useTrigger } from './useTrigger';
@@ -25,13 +25,17 @@ export function PopupMount({ popup, fetchImpl, preview, forceOpen, onClose }: Po
   const shouldOpen = allowed && (forceOpen || triggered);
 
   const [open, setOpen] = useState(false);
+  // Open only once per mount. Without this, closing (overlay/esc/X) would
+  // immediately re-open because `shouldOpen` stays true after the trigger fires.
+  const openedOnce = useRef(false);
 
   useEffect(() => {
-    if (shouldOpen && !open) {
+    if (shouldOpen && !openedOnce.current) {
+      openedOnce.current = true;
       setOpen(true);
       if (!preview) markShown(popup);
     }
-  }, [shouldOpen, open, preview, popup]);
+  }, [shouldOpen, preview, popup]);
 
   const close = useCallback(() => {
     setOpen(false);
