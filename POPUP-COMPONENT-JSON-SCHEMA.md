@@ -94,6 +94,7 @@ interface ContentItem {
   order: number; // sort order within the modal body
   type: ContentType; // what kind of item this is
   value?: string; // display text (heading / text); label for inputs / buttons
+  height?: number; // spacer only — vertical gap in px (default 16)
   styleProps?: StyleProps; // merged into the React component's style
   options?: PopupOption[]; // radio only — the selectable choices (see §5)
   required?: boolean; // proposal: inputs only — block submit if empty
@@ -103,6 +104,7 @@ interface ContentItem {
 type ContentType =
   | "heading"
   | "text"
+  | "spacer" // a fixed-height vertical gap (see §5)
   | "email"
   | "radio"
   | "checkbox"
@@ -138,13 +140,15 @@ Which fields are meaningful per type:
 | ----------------- | ----------------- | ----------- | ----------------- | ---------- | ----------------- |
 | `heading`         | ✅ text shown     | —           | —                 | —          | a heading         |
 | `text`            | ✅ text shown     | —           | —                 | —          | a paragraph       |
+| `spacer`          | —                 | —           | —                 | —          | a vertical gap    |
 | `email`           | label/placeholder | —           | ✅                | optional   | an email input    |
 | `radio`           | group label       | ✅ required | ✅                | optional   | a radio group     |
 | `checkbox`        | label             | —           | ✅                | optional   | a checkbox        |
 | `free-text-input` | label/placeholder | —           | ✅                | optional   | a text input      |
 | `submit-button`   | ✅ button label   | —           | —                 | —          | the submit button |
 
-- **`radio` options** live on the content item as `options: { label, value }[]`. The label is rendered; the selected option's `value` is what gets submitted.
+- **`spacer`** ignores `value`; it renders an empty block whose height is `height` px (default `16`). Use it to add breathing room between items.
+- **`radio` options** live on the content item as `options: { label, value }[]`. The label is rendered; the selected option's `value` is what gets submitted. Each `value` must be **URL-safe** (see §6).
 - **`submit-button`** is what actually triggers the request assembly + `fetch`. Without it there's no way to submit; flagged as a proposal in case you'd rather the modal auto-submit some other way.
 
 ---
@@ -161,6 +165,11 @@ interface OnSubmitRequest {
   key?: string; // header name / body key. Defaults to 'email' for the email item; required otherwise.
 }
 ```
+
+> **Key format.** Every submit key — `onSubmitRequest.key`, `radio` option `value`s, and
+> `onSubmitCallbackPayload` keys — is used verbatim as a URL/header/body key, so it must be
+> **URL-safe**: no spaces, only RFC 3986 unreserved characters (letters, digits, and `-` `.` `_` `~`).
+> The builder flags violations inline and as validation errors.
 
 **Where the value comes from (by item `type`):**
 

@@ -35,6 +35,7 @@ export const POPUP_CSS = `
 .pm-close:hover { opacity: 1; }
 .pm-heading { font-size: 22px; font-weight: 700; margin: 0; }
 .pm-text { font-size: 15px; margin: 0; opacity: 0.9; }
+.pm-spacer { flex: none; width: 100%; }
 .pm-field { display: flex; flex-direction: column; gap: 6px; font-size: 14px; }
 .pm-field input[type="email"], .pm-field input[type="text"] {
   padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 15px;

@@ -16,6 +16,8 @@ export function makeContentItem(type: ContentType, order: number): ContentItem {
       return { ...base, value: 'Heading', styleProps: { align: 'center' } };
     case 'text':
       return { ...base, value: 'Some descriptive text.', styleProps: { align: 'center' } };
+    case 'spacer':
+      return { ...base, height: 16 };
     case 'email':
       return {
         ...base,

@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState, type CSSProperties } from 'react';
 import { designUsesImage, type ContentItem, type PopupModal, type StyleProps } from '@schema';
-import { firstMissingRequired, submitPopup, type FormValues, type SubmitOutcome } from './submit';
+import { firstInvalidEmail, firstMissingRequired, submitPopup, type FormValues, type SubmitOutcome } from './submit';
 import { ensureStyles } from './styles';
 
 export interface PopupContentProps {
@@ -50,6 +50,11 @@ export function PopupContent({ popup, onClose, fetchImpl, preview }: PopupConten
       setPhase({ kind: 'error', text: 'Please fill in the required fields.' });
       return;
     }
+    const badEmail = firstInvalidEmail(popup, values);
+    if (badEmail) {
+      setPhase({ kind: 'error', text: 'Please enter a valid email address.' });
+      return;
+    }
     setSubmitting(true);
     const outcome = await submitPopup(popup, values, fetchImpl);
     setSubmitting(false);
@@ -92,6 +97,8 @@ export function PopupContent({ popup, onClose, fetchImpl, preview }: PopupConten
         return <h2 key={item.id} className="pm-heading" style={style}>{item.value}</h2>;
       case 'text':
         return <p key={item.id} className="pm-text" style={style}>{item.value}</p>;
+      case 'spacer':
+        return <div key={item.id} className="pm-spacer" style={{ height: item.height ?? 16 }} aria-hidden />;
       case 'email':
         return (
           <label key={item.id} className="pm-field" style={style}>

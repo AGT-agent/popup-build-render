@@ -102,6 +102,25 @@ export function firstMissingRequired(popup: PopupModal, values: FormValues): str
   return null;
 }
 
+/** Basic email shape: something@something.tld, no whitespace. */
+export const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+/**
+ * Validate the format of any filled-in email inputs. Empty values are ignored
+ * here — emptiness is only an error when the field is required (see
+ * {@link firstMissingRequired}). Returns the id of the first malformed email.
+ */
+export function firstInvalidEmail(popup: PopupModal, values: FormValues): string | null {
+  for (const item of popup.contentItems) {
+    if (item.type !== 'email') continue;
+    const v = values[item.id];
+    const s = v === undefined ? '' : String(v).trim();
+    if (s === '') continue;
+    if (!EMAIL_RE.test(s)) return item.id;
+  }
+  return null;
+}
+
 function resolveCoupon(success: SubmitSuccess, responseJson: unknown): string | undefined {
   if (success.type !== 'coupon') return undefined;
   if (success.codeFromResponsePath) {

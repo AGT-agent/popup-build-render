@@ -1,7 +1,9 @@
 import {
   DESIGNS,
   FREQUENCIES,
+  URL_TOKEN_HINT,
   designUsesImage,
+  isUrlSafeToken,
   type CallbackPayloadEntry,
   type PopupDesign,
   type PopupFrequency,
@@ -192,23 +194,30 @@ function CustomSubmitValues({
   return (
     <div className="field-row">
       <label>Custom submit values</label>
-      {rows.map((row, i) => (
-        <div key={i} className="field-row inline" style={{ marginBottom: 6 }}>
-          <input
-            type="text"
-            placeholder="key"
-            value={row.key}
-            onChange={(e) => onChange(rows.map((r, j) => (j === i ? { ...r, key: e.target.value } : r)))}
-          />
-          <input
-            type="text"
-            placeholder="value"
-            value={row.value}
-            onChange={(e) => onChange(rows.map((r, j) => (j === i ? { ...r, value: e.target.value } : r)))}
-          />
-          <button className="ghost danger" onClick={() => onChange(rows.filter((_, j) => j !== i))}>✕</button>
-        </div>
-      ))}
+      {rows.map((row, i) => {
+        const badKey = Boolean(row.key) && !isUrlSafeToken(row.key);
+        return (
+          <div key={i} style={{ marginBottom: 6 }}>
+            <div className="field-row inline">
+              <input
+                type="text"
+                className={badKey ? 'invalid' : undefined}
+                placeholder="key"
+                value={row.key}
+                onChange={(e) => onChange(rows.map((r, j) => (j === i ? { ...r, key: e.target.value } : r)))}
+              />
+              <input
+                type="text"
+                placeholder="value"
+                value={row.value}
+                onChange={(e) => onChange(rows.map((r, j) => (j === i ? { ...r, value: e.target.value } : r)))}
+              />
+              <button className="ghost danger" onClick={() => onChange(rows.filter((_, j) => j !== i))}>✕</button>
+            </div>
+            {badKey && <span className="field-error">{URL_TOKEN_HINT}</span>}
+          </div>
+        );
+      })}
       <button className="ghost" onClick={() => onChange([...rows, { key: '', value: '' }])}>+ value</button>
     </div>
   );

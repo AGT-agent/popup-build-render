@@ -20,6 +20,7 @@ export type PopupFrequency = 'session' | 'day' | 'ever' | 'always';
 export type ContentType =
   | 'heading'
   | 'text'
+  | 'spacer'
   | 'email'
   | 'radio'
   | 'checkbox'
@@ -55,6 +56,7 @@ export interface ContentItem {
   order: number;
   type: ContentType;
   value?: string;
+  height?: number; // spacer only — vertical gap in px
   styleProps?: StyleProps;
   options?: PopupOption[];
   required?: boolean;
@@ -99,6 +101,7 @@ export const INPUT_TYPES: ContentType[] = ['email', 'radio', 'checkbox', 'free-t
 export const CONTENT_TYPES: ContentType[] = [
   'heading',
   'text',
+  'spacer',
   'email',
   'radio',
   'checkbox',
@@ -113,6 +116,19 @@ export const FREQUENCIES: PopupFrequency[] = ['always', 'session', 'day', 'ever'
 export function isInputType(type: ContentType): boolean {
   return INPUT_TYPES.includes(type);
 }
+
+/**
+ * A submit key or radio value ends up verbatim in a URL/header/body key, so it
+ * must be URL-safe: no spaces, only RFC 3986 unreserved characters
+ * (letters, digits, and `-` `.` `_` `~`).
+ */
+export const URL_TOKEN_RE = /^[A-Za-z0-9._~-]+$/;
+
+export function isUrlSafeToken(value: string): boolean {
+  return URL_TOKEN_RE.test(value);
+}
+
+export const URL_TOKEN_HINT = 'No spaces or special characters — use letters, digits, . _ ~ -';
 
 /** Designs that consume the top-level `imageUrl`. */
 export function designUsesImage(design: PopupDesign): boolean {

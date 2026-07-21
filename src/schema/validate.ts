@@ -4,6 +4,7 @@ import {
   FREQUENCIES,
   designUsesImage,
   isInputType,
+  isUrlSafeToken,
   type ContentItem,
   type PopupModal,
 } from './types';
@@ -27,8 +28,20 @@ function validateContentItem(item: ContentItem, index: number, issues: Validatio
     issues.push({ path: `${at}.value`, message: `"${item.type}" needs a value.`, level: 'warning' });
   }
 
-  if (item.type === 'radio' && (!item.options || item.options.length === 0)) {
-    issues.push({ path: `${at}.options`, message: 'Radio needs at least one option.', level: 'error' });
+  if (item.type === 'radio') {
+    if (!item.options || item.options.length === 0) {
+      issues.push({ path: `${at}.options`, message: 'Radio needs at least one option.', level: 'error' });
+    }
+    // Radio values are submitted verbatim, so they must be URL-safe.
+    (item.options ?? []).forEach((opt, oi) => {
+      if (opt.value && !isUrlSafeToken(opt.value)) {
+        issues.push({
+          path: `${at}.options[${oi}].value`,
+          message: `Option value "${opt.value}" must be URL-safe (no spaces or special characters).`,
+          level: 'error',
+        });
+      }
+    });
   }
 
   if (isInputType(item.type)) {
@@ -39,6 +52,14 @@ function validateContentItem(item: ContentItem, index: number, issues: Validatio
     // email defaults its key to "email"; every other input must declare one.
     if (item.type !== 'email' && req && !req.key) {
       issues.push({ path: `${at}.onSubmitRequest.key`, message: 'A submit key is required for this input.', level: 'warning' });
+    }
+    // Submit keys become URL/header/body keys — they must be URL-safe.
+    if (req?.key && !isUrlSafeToken(req.key)) {
+      issues.push({
+        path: `${at}.onSubmitRequest.key`,
+        message: `Submit key "${req.key}" must be URL-safe (no spaces or special characters).`,
+        level: 'error',
+      });
     }
   }
 }
@@ -69,6 +90,17 @@ export function validatePopup(popup: PopupModal): ValidationIssue[] {
   if (popup.frequency && !FREQUENCIES.includes(popup.frequency)) {
     issues.push({ path: 'frequency', message: `Unknown frequency "${popup.frequency}".`, level: 'error' });
   }
+
+  // Custom submit values become request keys too — enforce the same URL-safe rule.
+  (popup.onSubmitCallbackPayload ?? []).forEach((entry, i) => {
+    if (entry.key && !isUrlSafeToken(entry.key)) {
+      issues.push({
+        path: `onSubmitCallbackPayload[${i}].key`,
+        message: `Custom submit key "${entry.key}" must be URL-safe (no spaces or special characters).`,
+        level: 'error',
+      });
+    }
+  });
 
   if (!Array.isArray(popup.contentItems) || popup.contentItems.length === 0) {
     issues.push({ path: 'contentItems', message: 'At least one content item is required.', level: 'error' });

@@ -1,7 +1,9 @@
 import { useState } from 'react';
 import {
   CONTENT_TYPES,
+  URL_TOKEN_HINT,
   isInputType,
+  isUrlSafeToken,
   makeContentItem,
   type ContentItem,
   type ContentType,
@@ -121,7 +123,18 @@ function ItemCard({ item, index, count, onMove, onRemove, onUpdate }: ItemCardPr
         </div>
       </div>
 
-      {item.type !== 'radio' && (
+      {item.type === 'spacer' && (
+        <div className="field-row">
+          <label>Height (px)</label>
+          <input
+            type="number"
+            min={0}
+            value={item.height ?? 16}
+            onChange={(e) => onUpdate(item.id, { height: e.target.value === '' ? undefined : Math.max(0, Number(e.target.value)) })}
+          />
+        </div>
+      )}
+      {item.type !== 'radio' && item.type !== 'spacer' && (
         <div className="field-row">
           <label>{labelFor(item.type)}</label>
           <input type="text" value={item.value ?? ''} onChange={(e) => onUpdate(item.id, { value: e.target.value })} />
@@ -197,10 +210,14 @@ function ItemCard({ item, index, count, onMove, onRemove, onUpdate }: ItemCardPr
               <label>Submit key</label>
               <input
                 type="text"
+                className={item.onSubmitRequest?.key && !isUrlSafeToken(item.onSubmitRequest.key) ? 'invalid' : undefined}
                 placeholder={item.type === 'email' ? 'email' : 'key'}
                 value={item.onSubmitRequest?.key ?? ''}
                 onChange={(e) => onUpdate(item.id, { onSubmitRequest: { target: item.onSubmitRequest?.target ?? 'body', key: e.target.value || undefined } })}
               />
+              {item.onSubmitRequest?.key && !isUrlSafeToken(item.onSubmitRequest.key) && (
+                <span className="field-error">{URL_TOKEN_HINT}</span>
+              )}
             </div>
           </div>
         </>
@@ -216,23 +233,30 @@ function RadioOptions({ item, onUpdate }: { item: ContentItem; onUpdate: ItemCar
   return (
     <div className="field-row">
       <label>Options</label>
-      {options.map((opt, i) => (
-        <div key={i} className="field-row inline" style={{ marginBottom: 6 }}>
-          <input
-            type="text"
-            placeholder="label"
-            value={opt.label}
-            onChange={(e) => set(options.map((o, j) => (j === i ? { ...o, label: e.target.value } : o)))}
-          />
-          <input
-            type="text"
-            placeholder="value"
-            value={opt.value}
-            onChange={(e) => set(options.map((o, j) => (j === i ? { ...o, value: e.target.value } : o)))}
-          />
-          <button className="ghost danger" onClick={() => set(options.filter((_, j) => j !== i))}>✕</button>
-        </div>
-      ))}
+      {options.map((opt, i) => {
+        const badValue = Boolean(opt.value) && !isUrlSafeToken(opt.value);
+        return (
+          <div key={i} style={{ marginBottom: 6 }}>
+            <div className="field-row inline">
+              <input
+                type="text"
+                placeholder="label"
+                value={opt.label}
+                onChange={(e) => set(options.map((o, j) => (j === i ? { ...o, label: e.target.value } : o)))}
+              />
+              <input
+                type="text"
+                className={badValue ? 'invalid' : undefined}
+                placeholder="value"
+                value={opt.value}
+                onChange={(e) => set(options.map((o, j) => (j === i ? { ...o, value: e.target.value } : o)))}
+              />
+              <button className="ghost danger" onClick={() => set(options.filter((_, j) => j !== i))}>✕</button>
+            </div>
+            {badValue && <span className="field-error">{URL_TOKEN_HINT}</span>}
+          </div>
+        );
+      })}
       <button className="ghost" onClick={() => set([...options, { label: `Option ${options.length + 1}`, value: `opt${options.length + 1}` }])}>
         + option
       </button>
