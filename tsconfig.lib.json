@@ -1,0 +1,12 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "noEmit": false,
+    "declaration": true,
+    "emitDeclarationOnly": true,
+    "allowImportingTsExtensions": false,
+    "outDir": "lib"
+  },
+  "include": ["src"],
+  "exclude": ["src/builder/main.tsx", "src/renderer/embed-example.tsx", "src/renderer/demo.ts"]
+}

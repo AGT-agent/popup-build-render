@@ -8,15 +8,44 @@ JSON-driven popup modals: a **renderer** that turns a popup JSON into a working 
 npm install
 npm run dev        # builder at http://localhost:5173/
                    # renderer demo at http://localhost:5173/demo.html
-npm run build      # typecheck + production build
+npm run build      # build the installable library into lib/
+npm run build:app  # typecheck + build the builder/demo pages into dist/
 ```
+
+## Installing in another project
+
+The package ships as an ESM library. `react` and `react-dom` are peer dependencies — the host app provides them.
+
+```bash
+# from GitHub (a branch, tag, or commit after #)
+npm i github:AGT-agent/popup-build-render
+npm i github:AGT-agent/popup-build-render#v0.1.0
+
+# from a local checkout, for development
+npm i ../popup-build-render     # symlinks; rebuild with `npm run build` after edits
+
+# from npm, once published
+npm i popup-build-render
+```
+
+Installing from GitHub or a local path runs the `prepare` script, which builds `lib/` — so no build output needs to be committed.
+
+Three entry points:
+
+```ts
+import { PopupMount, mountPopup, validatePopup } from 'popup-build-render';
+import { PopupBuilder } from 'popup-build-render/builder';
+import 'popup-build-render/builder.css';   // only needed with the builder
+```
+
+If you install from a local path, add `resolve: { dedupe: ['react', 'react-dom'] }` to the consuming app's Vite config — a symlinked package otherwise resolves its own React copy and hooks break.
 
 ## Using the renderer
 
 Drive everything from a popup JSON (shape defined in [`POPUP-COMPONENT-JSON-SCHEMA.md`](./POPUP-COMPONENT-JSON-SCHEMA.md)). Three entry points, from most to least batteries-included:
 
 ```ts
-import { mountPopup, PopupMount, PopupContent } from './src/renderer';
+import { mountPopup, PopupMount, PopupContent } from 'popup-build-render';
 ```
 
 - **`mountPopup(json)`** — for a storefront/plain page. Wires up the trigger, frequency cap, and placement (overlay, or inline if `htmlId` matches an element), then renders when appropriate. Returns `{ unmount() }`.
@@ -40,7 +69,7 @@ The renderer injects its own styles on first render, so it's self-contained — 
 Templates are persisted to `localStorage` via a Zustand store. To get the JSON out: **View JSON → Copy** on any template, or read the array directly:
 
 ```ts
-import { getAllPopups } from './src/builder/store';
+import { getAllPopups } from 'popup-build-render/builder';
 const popups = getAllPopups();   // PopupModal[] — hand any to the renderer
 ```
 
