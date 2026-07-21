@@ -44,6 +44,25 @@ body { margin: 0; font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-
 }
 .edit-menu .name-input:focus { outline: none; border-bottom: 2px solid var(--accent); }
 
+/* Fixed tab bar at the top of the menu */
+.tab-bar {
+  position: sticky; top: -16px; z-index: 5;
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px;
+  background: var(--panel); padding: 8px 0 12px;
+  margin: 0 0 4px;
+}
+.tab-bar .tab-btn {
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+  padding: 8px 6px; font-size: 13px; font-weight: 600; color: var(--muted);
+  background: var(--bg); border: 1px solid var(--border); border-radius: 8px;
+}
+.tab-bar .tab-btn svg { flex-shrink: 0; }
+.tab-bar .tab-btn:hover { color: var(--text); border-color: #c7d2fe; }
+.tab-bar .tab-btn.active {
+  color: #fff; background: var(--accent); border-color: var(--accent);
+}
+.tab-bar .tab-btn.active:hover { color: #fff; filter: brightness(1.03); }
+
 .edit-display { padding: 24px; display: grid; grid-template-rows: 1fr auto; gap: 20px; min-height: 0; }
 .edit-display .display-preview { display: flex; flex-direction: column; gap: 10px; min-height: 0; }
 .preview-wrap { flex: 1; display: flex; flex-direction: column; min-height: 0; }

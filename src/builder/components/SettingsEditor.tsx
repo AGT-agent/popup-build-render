@@ -18,6 +18,7 @@ interface Props {
 const TRIGGER_TYPES: PopupTrigger['type'][] = ['immediate', 'delay', 'scroll', 'exitIntent'];
 const SUCCESS_TYPES: SubmitSuccess['type'][] = ['close', 'message', 'coupon', 'redirect'];
 
+/** Delivery + Submission — the "Settings" tab. */
 export function SettingsEditor({ popup, onChange }: Props) {
   const setTrigger = (type: PopupTrigger['type']) => {
     let next: PopupTrigger;
@@ -95,39 +96,6 @@ export function SettingsEditor({ popup, onChange }: Props) {
         </div>
       </div>
 
-      {/* --- Design (renderer) --- */}
-      <div className="section">
-        <h3>Design</h3>
-        <div className="field-grid">
-          <div className="field-row">
-            <label>Layout</label>
-            <select value={popup.design} onChange={(e) => onChange({ design: e.target.value as PopupDesign })}>
-              {DESIGNS.map((d) => <option key={d} value={d}>{d}</option>)}
-            </select>
-          </div>
-          <div className="field-row">
-            <label>Border radius (px)</label>
-            <input
-              type="number"
-              min={0}
-              placeholder="14"
-              value={popup.borderRadius ?? ''}
-              onChange={(e) => onChange({ borderRadius: e.target.value === '' ? undefined : Number(e.target.value) })}
-            />
-          </div>
-          {designUsesImage(popup.design) && (
-            <div className="field-row">
-              <label>Image URL</label>
-              <input
-                type="url"
-                value={popup.imageUrl ?? ''}
-                onChange={(e) => onChange({ imageUrl: e.target.value || undefined })}
-              />
-            </div>
-          )}
-        </div>
-      </div>
-
       {/* --- Submission --- */}
       <div className="section">
         <h3>Submission</h3>
@@ -172,6 +140,43 @@ export function SettingsEditor({ popup, onChange }: Props) {
         />
       </div>
     </>
+  );
+}
+
+/** Layout / appearance — the "Design" tab. */
+export function DesignEditor({ popup, onChange }: Props) {
+  return (
+    <div className="section">
+      <h3>Design</h3>
+      <div className="field-grid">
+        <div className="field-row">
+          <label>Layout</label>
+          <select value={popup.design} onChange={(e) => onChange({ design: e.target.value as PopupDesign })}>
+            {DESIGNS.map((d) => <option key={d} value={d}>{d}</option>)}
+          </select>
+        </div>
+        <div className="field-row">
+          <label>Border radius (px)</label>
+          <input
+            type="number"
+            min={0}
+            placeholder="14"
+            value={popup.borderRadius ?? ''}
+            onChange={(e) => onChange({ borderRadius: e.target.value === '' ? undefined : Number(e.target.value) })}
+          />
+        </div>
+        {designUsesImage(popup.design) && (
+          <div className="field-row">
+            <label>Image URL</label>
+            <input
+              type="url"
+              value={popup.imageUrl ?? ''}
+              onChange={(e) => onChange({ imageUrl: e.target.value || undefined })}
+            />
+          </div>
+        )}
+      </div>
+    </div>
   );
 }
 
