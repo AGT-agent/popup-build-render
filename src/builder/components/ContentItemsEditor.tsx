@@ -73,7 +73,8 @@ function AddSectionButton({ onAdd }: { onAdd: (type: ContentType) => void }) {
       {open && <div className="add-backdrop" onClick={() => setOpen(false)} />}
       {open && (
         <div className="add-menu-popover">
-          {CONTENT_TYPES.map((t) => (
+          {/* Submit button is mandatory and always present — not addable. */}
+          {CONTENT_TYPES.filter((t) => t !== 'submit-button').map((t) => (
             <button
               key={t}
               onClick={() => {
@@ -114,9 +115,9 @@ function ItemCard({ item, index, count, onMove, onRemove, onUpdate }: ItemCardPr
             <>
               <button className="ghost" disabled={index === 0} onClick={() => onMove(index, -1)}>↑</button>
               <button className="ghost" disabled={index === count - 1} onClick={() => onMove(index, 1)}>↓</button>
+              <button className="ghost danger" onClick={() => onRemove(item.id)}>✕</button>
             </>
           )}
-          <button className="ghost danger" onClick={() => onRemove(item.id)}>✕</button>
         </div>
       </div>
 
