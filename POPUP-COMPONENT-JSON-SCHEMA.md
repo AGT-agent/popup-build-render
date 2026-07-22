@@ -154,19 +154,19 @@ Which fields are meaningful per type:
 
 ## 6. How a submit is assembled
 
-Each input item declares, via `onSubmitRequest`, whether it contributes to the **headers** or the **body** of the request to `url`, and under what key. The **value is always resolved at submit time** from the item's `type` — that's why there's no static value here.
+Each input item declares, via `onSubmitRequest`, whether it contributes to the **URL query string** or the **body** of the request to `url`, and under what key. The **value is always resolved at submit time** from the item's `type` — that's why there's no static value here.
 
 ```ts
-type RequestTarget = "header" | "body";
+type RequestTarget = "query" | "body";
 
 interface OnSubmitRequest {
-  target: RequestTarget; // header vs body — default 'body'
-  key?: string; // header name / body key. Defaults to 'email' for the email item; required otherwise.
+  target: RequestTarget; // query vs body — default 'body'
+  key?: string; // query param name / body key. Defaults to 'email' for the email item; required otherwise.
 }
 ```
 
 > **Key format.** Every submit key — `onSubmitRequest.key`, `radio` option `value`s, and
-> `onSubmitCallbackPayload` keys — is used verbatim as a URL/header/body key, so it must be
+> `onSubmitCallbackPayload` keys — is used verbatim as a URL query/body key, so it must be
 > **URL-safe**: no spaces, only RFC 3986 unreserved characters (letters, digits, and `-` `.` `_` `~`).
 > The builder flags violations inline and as validation errors.
 
@@ -181,7 +181,7 @@ interface OnSubmitRequest {
 
 **Assembly at submit time:**
 
-- `header` items → merged into the request headers as `key: value`.
+- `query` items → appended to the request URL's query string as `key=value`.
 - `body` items → merged into the request body as `{ key: value }`.
 - `onSubmitCallbackPayload` entries → merged into the request body as static `{ key: value }` pairs (query string for `GET`), alongside the resolved input values. These are fixed values the merchant sets in the builder, not tied to any input.
 - For `GET`, "body" params instead go on the query string (TBD — see [§8](#8-open-questions)).

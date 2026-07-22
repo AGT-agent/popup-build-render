@@ -60,9 +60,7 @@ export function assembleRequest(popup: PopupModal, values: FormValues): Assemble
     const key = defaultKey(item);
     const target = item.onSubmitRequest.target ?? 'body';
 
-    if (target === 'header') {
-      headers[key] = String(value);
-    } else if (popup.method === 'GET') {
+    if (target === 'query' || popup.method === 'GET') {
       query[key] = String(value);
     } else {
       bodyObj[key] = value;

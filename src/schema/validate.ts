@@ -46,14 +46,14 @@ function validateContentItem(item: ContentItem, index: number, issues: Validatio
 
   if (isInputType(item.type)) {
     const req = item.onSubmitRequest;
-    if (req && req.target !== 'header' && req.target !== 'body') {
-      issues.push({ path: `${at}.onSubmitRequest.target`, message: 'target must be "header" or "body".', level: 'error' });
+    if (req && req.target !== 'query' && req.target !== 'body') {
+      issues.push({ path: `${at}.onSubmitRequest.target`, message: 'target must be "query" or "body".', level: 'error' });
     }
     // email defaults its key to "email"; every other input must declare one.
     if (item.type !== 'email' && req && !req.key) {
       issues.push({ path: `${at}.onSubmitRequest.key`, message: 'A submit key is required for this input.', level: 'warning' });
     }
-    // Submit keys become URL/header/body keys — they must be URL-safe.
+    // Submit keys become URL query/body keys — they must be URL-safe.
     if (req?.key && !isUrlSafeToken(req.key)) {
       issues.push({
         path: `${at}.onSubmitRequest.key`,

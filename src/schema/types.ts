@@ -26,7 +26,7 @@ export type ContentType =
   | 'free-text-input'
   | 'submit-button';
 
-export type RequestTarget = 'header' | 'body';
+export type RequestTarget = 'query' | 'body';
 
 export interface StyleProps {
   align?: 'left' | 'center' | 'right';
@@ -117,7 +117,7 @@ export function isInputType(type: ContentType): boolean {
 }
 
 /**
- * A submit key or radio value ends up verbatim in a URL/header/body key, so it
+ * A submit key or radio value ends up verbatim in a URL query/body key, so it
  * must be URL-safe: no spaces, only RFC 3986 unreserved characters
  * (letters, digits, and `-` `.` `_` `~`).
  */

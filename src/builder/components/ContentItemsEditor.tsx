@@ -203,7 +203,7 @@ function ItemCard({ item, index, count, onMove, onRemove, onUpdate }: ItemCardPr
                 onChange={(e) => onUpdate(item.id, { onSubmitRequest: { ...item.onSubmitRequest, target: e.target.value as RequestTarget } })}
               >
                 <option value="body">body</option>
-                <option value="header">header</option>
+                <option value="query">query</option>
               </select>
             </div>
             <div className="field-row">
