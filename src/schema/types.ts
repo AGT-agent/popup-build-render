@@ -8,7 +8,6 @@
 export type PopupTrigger =
   | { type: 'delay'; seconds: number }
   | { type: 'scroll'; percent: number }
-  | { type: 'exitIntent' }
   | { type: 'immediate' };
 
 /** Pre-defined layout template the merchant picks between. */

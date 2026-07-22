@@ -57,11 +57,6 @@ export function EditingView({ popup }: { popup: PopupModal }) {
       {/* Narrow menu on the left */}
       <div className="edit-menu">
         <button className="ghost back" onClick={() => select(null)}>← All templates</button>
-        <input
-          className="name-input"
-          value={popup.name}
-          onChange={(e) => patch({ name: e.target.value })}
-        />
 
         {/* Fixed tab bar */}
         <div className="tab-bar">
@@ -76,6 +71,12 @@ export function EditingView({ popup }: { popup: PopupModal }) {
             </button>
           ))}
         </div>
+
+        <input
+          className="name-input"
+          value={popup.name}
+          onChange={(e) => patch({ name: e.target.value })}
+        />
 
         <div className="tab-panel">
           {tab === 'setup' && <SettingsEditor popup={popup} onChange={patch} />}

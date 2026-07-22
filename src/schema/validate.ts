@@ -15,7 +15,7 @@ export interface ValidationIssue {
   level: 'error' | 'warning';
 }
 
-const TRIGGER_TYPES = ['delay', 'scroll', 'exitIntent', 'immediate'];
+const TRIGGER_TYPES = ['delay', 'scroll', 'immediate'];
 
 function validateContentItem(item: ContentItem, index: number, issues: ValidationIssue[]): void {
   const at = `contentItems[${index}]`;

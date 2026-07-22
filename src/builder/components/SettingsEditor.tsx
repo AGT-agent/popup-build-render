@@ -17,7 +17,7 @@ interface Props {
   onChange: (patch: Partial<PopupModal>) => void;
 }
 
-const TRIGGER_TYPES: PopupTrigger['type'][] = ['immediate', 'delay', 'scroll', 'exitIntent'];
+const TRIGGER_TYPES: PopupTrigger['type'][] = ['immediate', 'delay', 'scroll'];
 const SUCCESS_TYPES: SubmitSuccess['type'][] = ['close', 'message', 'coupon', 'redirect'];
 
 /** Delivery + Submission — the "Settings" tab. */
@@ -92,7 +92,7 @@ export function SettingsEditor({ popup, onChange }: Props) {
           <input
             type="text"
             value={popup.htmlId ?? ''}
-            placeholder="e.g. simply-welcome-15"
+            placeholder="some-html-id"
             onChange={(e) => onChange({ htmlId: e.target.value || undefined })}
           />
         </div>

@@ -62,7 +62,6 @@ Discriminated union on `type` — when the modal opens.
 type PopupTrigger =
   | { type: "delay"; seconds: number } // open N seconds after page load
   | { type: "scroll"; percent: number } // open after scrolling N% of the page
-  | { type: "exitIntent" } // open when the cursor leaves toward the tab bar
   | { type: "immediate" }; // open as soon as the component mounts
 ```
 

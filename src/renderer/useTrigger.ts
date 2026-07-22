@@ -32,14 +32,6 @@ export function useTrigger(trigger: PopupTrigger, enabled = true): boolean {
       return () => window.removeEventListener('scroll', onScroll);
     }
 
-    if (trigger.type === 'exitIntent') {
-      const onLeave = (e: MouseEvent) => {
-        if (e.clientY <= 0) setFired(true);
-      };
-      document.addEventListener('mouseout', onLeave);
-      return () => document.removeEventListener('mouseout', onLeave);
-    }
-
     return undefined;
   }, [trigger, enabled, fired]);
 
