@@ -63,15 +63,39 @@ The renderer injects its own styles on first render, so it's self-contained — 
 
 `npm run dev` opens the builder. It has two parts:
 
-- **Saving view** — a list of your saved templates. Create one, or click a row to edit. Delete lives per-row here.
+- **Saving view** — a list of your saved templates. Create one, or click a row to edit. Delete lives per-row here. The radio on each row marks a template **in use**; a bar below the list then offers **Show JSON** for that one.
 - **Editing view** — a menu on the left (delivery, design, submission, and content items via the **+ Add section** button), a live preview on the right, and **View JSON** to see/copy the result.
 
-Templates are persisted to `localStorage` via a Zustand store. To get the JSON out: **View JSON → Copy** on any template, or read the array directly:
+Templates are persisted to `localStorage` via a Zustand store. To get the JSON out: **Show JSON → Copy**, or read it in code:
 
 ```ts
-import { getAllPopups } from 'popup-build-render/builder';
-const popups = getAllPopups();   // PopupModal[] — hand any to the renderer
+import { getAllPopups, getActivePopup } from 'popup-build-render/builder';
+
+const popups = getAllPopups();     // PopupModal[] — hand any to the renderer
+const inUse = getActivePopup();    // PopupModal | null — the radio-marked one
 ```
+
+### Reacting to the in-use template
+
+Rather than polling, have the builder tell you. In React, pass `onActiveChange` — it fires on mount, when a different template is marked, when the marked one is edited, and with `null` when it's cleared or deleted:
+
+```tsx
+import { PopupBuilder } from 'popup-build-render/builder';
+
+<PopupBuilder onActiveChange={(popup) => save(popup)} />
+```
+
+Outside React, subscribe to the store directly. Returns an unsubscribe function:
+
+```ts
+import { subscribeActivePopup } from 'popup-build-render/builder';
+
+const stop = subscribeActivePopup((popup) => save(popup));
+```
+
+Both fire only on real changes to the in-use popup — opening a template in the editor or editing a *different* one stays quiet.
+
+> The in-use mark lives in `localStorage` alongside the templates, so it's per-browser. If a storefront needs to know which popup to show, persist the JSON server-side from one of these callbacks — the radio is a local staging choice, not a shared source of truth.
 
 ## Project structure
 

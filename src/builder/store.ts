@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { makeExamplePopup, makePopup, type PopupModal } from '@schema';
 
-interface BuilderState {
+export interface BuilderState {
   /** The saved popups — the array you pull out to send as JSON to the renderer. */
   popups: PopupModal[];
   /** Id of the popup currently open in the editor. */
@@ -82,8 +82,30 @@ export function getAllPopups(): PopupModal[] {
   return useBuilderStore.getState().popups;
 }
 
+/** Selector for the in-use popup — shared by the hook, getter, and subscription. */
+export function selectActivePopup(s: BuilderState): PopupModal | null {
+  return s.popups.find((p) => p.id === s.activeId) ?? null;
+}
+
 /** The popup marked "in use" in the saving view, or null if none is. */
 export function getActivePopup(): PopupModal | null {
-  const { popups, activeId } = useBuilderStore.getState();
-  return popups.find((p) => p.id === activeId) ?? null;
+  return selectActivePopup(useBuilderStore.getState());
+}
+
+/**
+ * Watch the in-use popup — fires when a different template is marked in use,
+ * when it's edited, and when it's cleared or deleted. For non-React hosts;
+ * inside React, pass `onActiveChange` to <PopupBuilder /> instead.
+ * Returns an unsubscribe function.
+ */
+export function subscribeActivePopup(
+  listener: (popup: PopupModal | null) => void,
+): () => void {
+  let prev = getActivePopup();
+  return useBuilderStore.subscribe((state) => {
+    const next = selectActivePopup(state);
+    if (next === prev) return;
+    prev = next;
+    listener(next);
+  });
 }

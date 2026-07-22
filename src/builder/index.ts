@@ -3,4 +3,12 @@
 import './builder.css';
 
 export { App as PopupBuilder } from './App';
-export { useBuilderStore, getAllPopups, getActivePopup } from './store';
+export type { PopupBuilderProps } from './App';
+export {
+  useBuilderStore,
+  getAllPopups,
+  getActivePopup,
+  selectActivePopup,
+  subscribeActivePopup,
+} from './store';
+export type { BuilderState } from './store';
