@@ -1,10 +1,15 @@
 import { useBuilderStore } from '../store';
+import { JsonPane } from './JsonPane';
 
 export function SavingView() {
   const popups = useBuilderStore((s) => s.popups);
   const select = useBuilderStore((s) => s.select);
+  const activeId = useBuilderStore((s) => s.activeId);
+  const setActive = useBuilderStore((s) => s.setActive);
   const createPopup = useBuilderStore((s) => s.createPopup);
   const removePopup = useBuilderStore((s) => s.removePopup);
+
+  const active = popups.find((p) => p.id === activeId) ?? null;
 
   return (
     <div className="saving-view">
@@ -21,9 +26,25 @@ export function SavingView() {
         {popups.length === 0 && <p className="empty">No templates yet — create one to get started.</p>}
 
         {popups.map((p) => (
-          <div key={p.id} className="template-row" onClick={() => select(p.id)}>
+          <div
+            key={p.id}
+            className={`template-row${p.id === activeId ? ' in-use' : ''}`}
+            onClick={() => select(p.id)}
+          >
+            {/* Marking a row "in use" must not also open it in the editor. */}
+            <label className="t-radio" title="Use this template" onClick={(e) => e.stopPropagation()}>
+              <input
+                type="radio"
+                name="active-popup"
+                checked={p.id === activeId}
+                onChange={() => setActive(p.id)}
+              />
+            </label>
             <div className="t-body">
-              <div className="t-name">{p.name || 'Untitled'}</div>
+              <div className="t-name">
+                {p.name || 'Untitled'}
+                {p.id === activeId && <span className="t-badge">In use</span>}
+              </div>
               <div className="t-meta">{p.design} · {p.trigger.type} · {p.contentItems.length} items</div>
             </div>
             <div className="t-actions">
@@ -39,6 +60,19 @@ export function SavingView() {
             </div>
           </div>
         ))}
+
+        {active && (
+          <div className="active-bar">
+            <div className="t-body">
+              <div className="t-name">Using “{active.name || 'Untitled'}”</div>
+              <div className="t-meta">The JSON a host app gets from <code>getActivePopup()</code>.</div>
+            </div>
+            <div className="btn-row">
+              <JsonPane popup={active} label="Show JSON" />
+              <button className="ghost" onClick={() => setActive(null)}>Clear</button>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

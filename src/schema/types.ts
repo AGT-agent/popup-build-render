@@ -45,7 +45,7 @@ export interface OnSubmitRequest {
   key?: string;
 }
 
-/** A static extra key/value pair sent with every submit (custom submit values). */
+/** A static extra key/value pair sent with every submit (custom submit callback values). */
 export interface CallbackPayloadEntry {
   key: string;
   value: string;

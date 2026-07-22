@@ -49,7 +49,7 @@ interface CallbackPayloadEntry {
 | `frequency`    | `PopupFrequency?` | **Proposal.** Re-open cap, enforced via `localStorage`. Default `'always'`.                                                                                                     |
 | `onSuccess`    | `SubmitSuccess?`  | Post-submit success behavior. See [§6](#after-submit--onsuccess--onerror). Default: close.                                                                                      |
 | `onError`      | `SubmitError?`    | Post-submit error behavior. See [§6](#after-submit--onsuccess--onerror). Default: inline message, form stays open.                                                              |
-| `onSubmitCallbackPayload` | `CallbackPayloadEntry[]?` | Static extra `key`/`value` pairs merged into every submit (the "custom submit values" in the builder). See [§6](#6-how-a-submit-is-assembled).                        |
+| `onSubmitCallbackPayload` | `CallbackPayloadEntry[]?` | Static extra `key`/`value` pairs merged into every submit (the "custom submit callback values" in the builder). See [§6](#6-how-a-submit-is-assembled).                        |
 | `contentItems` | `ContentItem[]`   | See [§4](#4-contentitem). Rendered in `order` order.                                                                                                                            |
 
 ---

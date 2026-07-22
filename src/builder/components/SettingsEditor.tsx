@@ -193,7 +193,7 @@ function CustomSubmitValues({
 
   return (
     <div className="field-row">
-      <label>Custom submit values</label>
+      <label>Custom submit callback values</label>
       {rows.map((row, i) => {
         const badKey = Boolean(row.key) && !isUrlSafeToken(row.key);
         return (

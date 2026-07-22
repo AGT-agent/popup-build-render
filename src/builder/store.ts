@@ -7,8 +7,12 @@ interface BuilderState {
   popups: PopupModal[];
   /** Id of the popup currently open in the editor. */
   selectedId: string | null;
+  /** Id of the popup marked "in use" — the one a host app pulls out to render. */
+  activeId: string | null;
 
   select: (id: string | null) => void;
+  /** Mark a popup as the one in use; pass null to clear. */
+  setActive: (id: string | null) => void;
   createPopup: (fromExample?: boolean) => string;
   updatePopup: (id: string, patch: Partial<PopupModal>) => void;
   /** Replace a popup wholesale (used by the raw-JSON editor and full-object edits). */
@@ -23,8 +27,11 @@ export const useBuilderStore = create<BuilderState>()(
     (set, get) => ({
       popups: [],
       selectedId: null,
+      activeId: null,
 
       select: (id) => set({ selectedId: id }),
+
+      setActive: (id) => set({ activeId: id }),
 
       createPopup: (fromExample = false) => {
         const popup = fromExample ? makeExamplePopup() : makePopup();
@@ -56,6 +63,7 @@ export const useBuilderStore = create<BuilderState>()(
         set((s) => ({
           popups: s.popups.filter((p) => p.id !== id),
           selectedId: s.selectedId === id ? null : s.selectedId,
+          activeId: s.activeId === id ? null : s.activeId,
         })),
 
       importPopups: (incoming) =>
@@ -72,4 +80,10 @@ export const useBuilderStore = create<BuilderState>()(
 /** Convenience selector: the current array of popup JSONs. */
 export function getAllPopups(): PopupModal[] {
   return useBuilderStore.getState().popups;
+}
+
+/** The popup marked "in use" in the saving view, or null if none is. */
+export function getActivePopup(): PopupModal | null {
+  const { popups, activeId } = useBuilderStore.getState();
+  return popups.find((p) => p.id === activeId) ?? null;
 }

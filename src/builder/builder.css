@@ -24,10 +24,28 @@ body { margin: 0; font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-
   padding: 14px 16px; margin-bottom: 10px; cursor: pointer;
 }
 .template-row:hover { border-color: #c7d2fe; box-shadow: 0 2px 10px rgba(0,0,0,0.04); }
+.template-row.in-use { border-color: var(--accent); }
 .template-row .t-body { flex: 1; min-width: 0; }
-.template-row .t-name { font-weight: 600; font-size: 15px; }
+.template-row .t-name { font-weight: 600; font-size: 15px; display: flex; align-items: center; gap: 8px; }
 .template-row .t-meta { font-size: 12px; color: var(--muted); }
 .template-row .t-actions { display: flex; gap: 6px; }
+.template-row .t-radio { display: flex; align-items: center; cursor: pointer; }
+.template-row .t-radio input { accent-color: var(--accent); width: 16px; height: 16px; cursor: pointer; }
+.t-badge {
+  font-size: 10px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase;
+  color: var(--accent); background: #eef2ff; border-radius: 999px; padding: 2px 7px;
+}
+
+/* The "in use" summary + JSON handoff, pinned below the template list. */
+.active-bar {
+  display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+  background: var(--panel); border: 1px solid var(--accent); border-radius: 10px;
+  padding: 14px 16px; margin-top: 20px;
+}
+.active-bar .t-body { flex: 1; min-width: 0; }
+.active-bar .t-name { font-weight: 600; font-size: 14px; }
+.active-bar .t-meta { font-size: 12px; color: var(--muted); }
+.active-bar code { font-size: 11px; background: var(--bg); border-radius: 4px; padding: 1px 4px; }
 
 /* ---------- Editing view ---------- */
 .editing-view { display: grid; grid-template-columns: 400px 1fr; height: 100vh; }

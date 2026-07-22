@@ -91,7 +91,7 @@ export function validatePopup(popup: PopupModal): ValidationIssue[] {
     issues.push({ path: 'frequency', message: `Unknown frequency "${popup.frequency}".`, level: 'error' });
   }
 
-  // Custom submit values become request keys too — enforce the same URL-safe rule.
+  // Custom submit callback values become request keys too — enforce the same URL-safe rule.
   (popup.onSubmitCallbackPayload ?? []).forEach((entry, i) => {
     if (entry.key && !isUrlSafeToken(entry.key)) {
       issues.push({

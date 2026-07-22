@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { validatePopup, type PopupModal } from '@schema';
 
-export function JsonPane({ popup }: { popup: PopupModal }) {
+export function JsonPane({ popup, label = 'View JSON' }: { popup: PopupModal; label?: string }) {
   const [open, setOpen] = useState(false);
   const issues = validatePopup(popup);
   const errorCount = issues.filter((i) => i.level === 'error').length;
@@ -9,7 +9,7 @@ export function JsonPane({ popup }: { popup: PopupModal }) {
   return (
     <>
       <button onClick={() => setOpen(true)}>
-        View JSON{errorCount > 0 ? ` · ${errorCount} error${errorCount === 1 ? '' : 's'}` : ''}
+        {label}{errorCount > 0 ? ` · ${errorCount} error${errorCount === 1 ? '' : 's'}` : ''}
       </button>
       {open && <JsonModal popup={popup} onClose={() => setOpen(false)} />}
     </>

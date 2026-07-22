@@ -3,4 +3,4 @@
 import './builder.css';
 
 export { App as PopupBuilder } from './App';
-export { useBuilderStore, getAllPopups } from './store';
+export { useBuilderStore, getAllPopups, getActivePopup } from './store';
