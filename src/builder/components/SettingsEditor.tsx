@@ -88,7 +88,7 @@ export function SettingsEditor({ popup, onChange }: Props) {
         </div>
 
         <div className="field-row">
-          <label>htmlId (inline mount target — leave blank for overlay)</label>
+          <label>htmlId (only show on pages containing this element — leave blank to always show)</label>
           <input
             type="text"
             value={popup.htmlId ?? ''}

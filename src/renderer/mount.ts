@@ -12,26 +12,27 @@ export interface MountHandle {
   unmount: () => void;
 }
 
+/** No-op handle returned when there is nothing to render. */
+const NOOP_HANDLE: MountHandle = { unmount() {} };
+
 /**
  * Storefront entry point. Give it a popup JSON and it wires up the trigger,
  * frequency cap and placement, then renders when appropriate.
  *
- * - If `popup.htmlId` matches an element on the page, the modal mounts inline
- *   into it. Otherwise it mounts a fresh full-page overlay container on <body>.
+ * `htmlId` acts purely as a page gate — it decides *whether* the popup shows,
+ * not where it renders. The popup is always a full-page overlay modal.
+ * - No `htmlId`: always renders (on every page it's loaded on).
+ * - `htmlId` matches an element on the page: renders as a full-page overlay.
+ * - `htmlId` set but no match: renders nothing (does NOT fall back to <body>).
  */
 export function mountPopup(popup: PopupModal, opts: MountOptions = {}): MountHandle {
-  const inlineTarget = popup.htmlId ? document.getElementById(popup.htmlId) : null;
+  // htmlId is an opt-in page gate: if the target isn't on the page, the popup
+  // is meant for a different page, so render nothing at all.
+  if (popup.htmlId && !document.getElementById(popup.htmlId)) return NOOP_HANDLE;
 
-  let container: HTMLElement;
-  let ownsContainer = false;
-  if (inlineTarget) {
-    container = inlineTarget;
-  } else {
-    container = document.createElement('div');
-    container.setAttribute('data-popup-root', popup.id);
-    document.body.appendChild(container);
-    ownsContainer = true;
-  }
+  const container = document.createElement('div');
+  container.setAttribute('data-popup-root', popup.id);
+  document.body.appendChild(container);
 
   const root: Root = createRoot(container);
   root.render(
@@ -45,7 +46,7 @@ export function mountPopup(popup: PopupModal, opts: MountOptions = {}): MountHan
   return {
     unmount() {
       root.unmount();
-      if (ownsContainer) container.remove();
+      container.remove();
     },
   };
 }

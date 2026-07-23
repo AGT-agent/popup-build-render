@@ -56,9 +56,8 @@ export function PopupMount({ popup, fetchImpl, preview, forceOpen, onClose }: Po
 
   const content = <PopupContent popup={popup} onClose={close} fetchImpl={fetchImpl} preview={preview} />;
 
-  // Inline placement (htmlId) renders the card in flow; overlay wraps it.
-  if (popup.htmlId) return content;
-
+  // Always a full-page overlay modal. `htmlId` only gates whether the popup
+  // mounts at all (handled in mountPopup); it does not change placement.
   return (
     <div
       className="pm-overlay"
