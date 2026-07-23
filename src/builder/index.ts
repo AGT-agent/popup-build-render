@@ -8,7 +8,10 @@ export {
   useBuilderStore,
   getAllPopups,
   getActivePopup,
+  getActivePopups,
   selectActivePopup,
+  selectActivePopups,
   subscribeActivePopup,
+  subscribeActivePopups,
 } from './store';
 export type { BuilderState } from './store';

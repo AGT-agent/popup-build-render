@@ -1,25 +1,51 @@
 import { useEffect, useState } from 'react';
 import { validatePopup, type PopupModal } from '@schema';
 
-export function JsonPane({ popup, label = 'View JSON' }: { popup: PopupModal; label?: string }) {
+/**
+ * "View JSON" button + modal. Pass `popup` to emit a single object, or `popups`
+ * to emit an array (the multi-template handoff). Validation errors are counted
+ * across whatever is passed.
+ */
+export function JsonPane({
+  popup,
+  popups,
+  label = 'View JSON',
+}: {
+  popup?: PopupModal;
+  popups?: PopupModal[];
+  label?: string;
+}) {
   const [open, setOpen] = useState(false);
-  const issues = validatePopup(popup);
-  const errorCount = issues.filter((i) => i.level === 'error').length;
+  const isArray = popups !== undefined;
+  const items = isArray ? popups : popup ? [popup] : [];
+  const errorCount = items
+    .flatMap((p) => validatePopup(p))
+    .filter((i) => i.level === 'error').length;
+
+  const value: PopupModal | PopupModal[] = isArray ? items : items[0];
 
   return (
     <>
       <button onClick={() => setOpen(true)}>
         {label}{errorCount > 0 ? ` · ${errorCount} error${errorCount === 1 ? '' : 's'}` : ''}
       </button>
-      {open && <JsonModal popup={popup} onClose={() => setOpen(false)} />}
+      {open && <JsonModal items={items} value={value} onClose={() => setOpen(false)} />}
     </>
   );
 }
 
-function JsonModal({ popup, onClose }: { popup: PopupModal; onClose: () => void }) {
+function JsonModal({
+  items,
+  value,
+  onClose,
+}: {
+  items: PopupModal[];
+  value: PopupModal | PopupModal[];
+  onClose: () => void;
+}) {
   const [copied, setCopied] = useState(false);
-  const json = JSON.stringify(popup, null, 2);
-  const issues = validatePopup(popup);
+  const json = JSON.stringify(value, null, 2);
+  const issues = items.flatMap((p) => validatePopup(p));
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => e.key === 'Escape' && onClose();

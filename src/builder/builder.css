@@ -85,26 +85,29 @@ body {
   display: flex;
   gap: 6px;
 }
-.template-row .t-radio {
+.t-check {
   display: flex;
   align-items: center;
+  gap: 6px;
   cursor: pointer;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--muted);
+  white-space: nowrap;
 }
-.template-row .t-radio input {
+.t-check input {
   accent-color: var(--accent);
   width: 16px;
   height: 16px;
   cursor: pointer;
 }
-.t-badge {
-  font-size: 10px;
-  font-weight: 600;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
+.template-row.in-use .t-check {
   color: var(--accent);
-  background: #eef2ff;
-  border-radius: 999px;
-  padding: 2px 7px;
+}
+.active-bar .single-toggle {
+  margin-top: 8px;
+  font-weight: 500;
+  color: var(--muted);
 }
 
 /* The "in use" summary + JSON handoff, pinned below the template list. */
@@ -114,7 +117,6 @@ body {
   gap: 12px;
   flex-wrap: wrap;
   background: var(--panel);
-  border: 1px solid var(--accent);
   border-radius: 10px;
   padding: 14px 16px;
   margin-top: 20px;

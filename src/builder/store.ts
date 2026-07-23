@@ -7,12 +7,22 @@ export interface BuilderState {
   popups: PopupModal[];
   /** Id of the popup currently open in the editor. */
   selectedId: string | null;
-  /** Id of the popup marked "in use" — the one a host app pulls out to render. */
-  activeId: string | null;
+  /** Ids of the popups marked "Active" — the ones a host app pulls out to render. */
+  activeIds: string[];
+  /**
+   * When true, only one popup may be Active at a time and the handoff exports a
+   * single JSON object; when false, any number may be Active and the handoff
+   * exports an array.
+   */
+  singleMode: boolean;
 
   select: (id: string | null) => void;
-  /** Mark a popup as the one in use; pass null to clear. */
-  setActive: (id: string | null) => void;
+  /** Flip a popup's Active mark. In single mode, activating one deactivates the rest. */
+  toggleActive: (id: string) => void;
+  /** Clear every Active mark. */
+  clearActive: () => void;
+  /** Toggle single-vs-array export. Turning it on trims Active down to one. */
+  setSingleMode: (on: boolean) => void;
   createPopup: (fromExample?: boolean) => string;
   updatePopup: (id: string, patch: Partial<PopupModal>) => void;
   /** Replace a popup wholesale (used by the raw-JSON editor and full-object edits). */
@@ -27,11 +37,27 @@ export const useBuilderStore = create<BuilderState>()(
     (set, get) => ({
       popups: [],
       selectedId: null,
-      activeId: null,
+      activeIds: [],
+      singleMode: false,
 
       select: (id) => set({ selectedId: id }),
 
-      setActive: (id) => set({ activeId: id }),
+      toggleActive: (id) =>
+        set((s) => {
+          if (s.activeIds.includes(id)) {
+            return { activeIds: s.activeIds.filter((x) => x !== id) };
+          }
+          return { activeIds: s.singleMode ? [id] : [...s.activeIds, id] };
+        }),
+
+      clearActive: () => set({ activeIds: [] }),
+
+      setSingleMode: (on) =>
+        set((s) => ({
+          singleMode: on,
+          // Collapsing to single mode keeps only the first-marked popup active.
+          activeIds: on ? s.activeIds.slice(0, 1) : s.activeIds,
+        })),
 
       createPopup: (fromExample = false) => {
         const popup = fromExample ? makeExamplePopup() : makePopup();
@@ -63,7 +89,7 @@ export const useBuilderStore = create<BuilderState>()(
         set((s) => ({
           popups: s.popups.filter((p) => p.id !== id),
           selectedId: s.selectedId === id ? null : s.selectedId,
-          activeId: s.activeId === id ? null : s.activeId,
+          activeIds: s.activeIds.filter((x) => x !== id),
         })),
 
       importPopups: (incoming) =>
@@ -82,18 +108,51 @@ export function getAllPopups(): PopupModal[] {
   return useBuilderStore.getState().popups;
 }
 
-/** Selector for the in-use popup — shared by the hook, getter, and subscription. */
-export function selectActivePopup(s: BuilderState): PopupModal | null {
-  return s.popups.find((p) => p.id === s.activeId) ?? null;
+/** Selector for every Active popup, in list order — the multi-template handoff. */
+export function selectActivePopups(s: BuilderState): PopupModal[] {
+  return s.popups.filter((p) => s.activeIds.includes(p.id));
 }
 
-/** The popup marked "in use" in the saving view, or null if none is. */
+/** Selector for the single Active popup (the first, in single mode the only one). */
+export function selectActivePopup(s: BuilderState): PopupModal | null {
+  return selectActivePopups(s)[0] ?? null;
+}
+
+/** Every popup marked Active in the saving view — the array handoff. */
+export function getActivePopups(): PopupModal[] {
+  return selectActivePopups(useBuilderStore.getState());
+}
+
+/** The single Active popup, or null if none is — the single-JSON handoff. */
 export function getActivePopup(): PopupModal | null {
   return selectActivePopup(useBuilderStore.getState());
 }
 
+/** True when two popup lists hold the same objects in the same order. */
+function sameList(a: PopupModal[], b: PopupModal[]): boolean {
+  return a.length === b.length && a.every((p, i) => p === b[i]);
+}
+
 /**
- * Watch the in-use popup — fires when a different template is marked in use,
+ * Watch the full set of Active popups — fires when the marks change, when any
+ * Active popup is edited, and when they're cleared or deleted. For non-React
+ * hosts; inside React, pass `onActiveChange` to <PopupBuilder /> instead.
+ * Returns an unsubscribe function.
+ */
+export function subscribeActivePopups(
+  listener: (popups: PopupModal[]) => void,
+): () => void {
+  let prev = getActivePopups();
+  return useBuilderStore.subscribe((state) => {
+    const next = selectActivePopups(state);
+    if (sameList(prev, next)) return;
+    prev = next;
+    listener(next);
+  });
+}
+
+/**
+ * Watch the single Active popup — fires when a different template is marked,
  * when it's edited, and when it's cleared or deleted. For non-React hosts;
  * inside React, pass `onActiveChange` to <PopupBuilder /> instead.
  * Returns an unsubscribe function.

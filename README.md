@@ -63,39 +63,44 @@ The renderer injects its own styles on first render, so it's self-contained — 
 
 `npm run dev` opens the builder. It has two parts:
 
-- **Saving view** — a list of your saved templates. Create one, or click a row to edit. Delete lives per-row here. The radio on each row marks a template **in use**; a bar below the list then offers **Show JSON** for that one.
+- **Saving view** — a list of your saved templates. Create one, or click a row to edit. Delete lives per-row here. The **Active** checkbox on each row marks a template for handoff; check as many as you like. A bar below the list then offers **Show JSON** for the Active set.
 - **Editing view** — a menu on the left (delivery, design, submission, and content items via the **+ Add section** button), a live preview on the right, and **View JSON** to see/copy the result.
+
+**Active is multi-select by default** — check several templates and the handoff is a JSON **array**, ready to loop over with `mountPopup` (see [Using the renderer](#using-the-renderer)). The handoff bar carries a **Use just one (export a single JSON)** checkbox: tick it to constrain Active to a single row and emit one JSON **object** instead of an array.
 
 Templates are persisted to `localStorage` via a Zustand store. To get the JSON out: **Show JSON → Copy**, or read it in code:
 
 ```ts
-import { getAllPopups, getActivePopup } from 'popup-build-render/builder';
+import { getAllPopups, getActivePopups, getActivePopup } from 'popup-build-render/builder';
 
-const popups = getAllPopups();     // PopupModal[] — hand any to the renderer
-const inUse = getActivePopup();    // PopupModal | null — the radio-marked one
+const popups = getAllPopups();      // PopupModal[]   — every saved template
+const active = getActivePopups();   // PopupModal[]   — the Active-checked ones
+const one = getActivePopup();       // PopupModal|null — the first Active one (use with "Use just one")
 ```
 
-### Reacting to the in-use template
+### Reacting to the Active templates
 
-Rather than polling, have the builder tell you. In React, pass `onActiveChange` — it fires on mount, when a different template is marked, when the marked one is edited, and with `null` when it's cleared or deleted:
+Rather than polling, have the builder tell you. In React, pass `onActiveChangeMany` for the full Active set (or `onActiveChange` for just the single/first one). Each fires on mount, when the marks change, when an Active template is edited, and when the set is cleared or deleted:
 
 ```tsx
 import { PopupBuilder } from 'popup-build-render/builder';
 
-<PopupBuilder onActiveChange={(popup) => save(popup)} />
+<PopupBuilder onActiveChangeMany={(popups) => save(popups)} />
+<PopupBuilder onActiveChange={(popup) => save(popup)} />   // single/first
 ```
 
-Outside React, subscribe to the store directly. Returns an unsubscribe function:
+Outside React, subscribe to the store directly. Both return an unsubscribe function:
 
 ```ts
-import { subscribeActivePopup } from 'popup-build-render/builder';
+import { subscribeActivePopups, subscribeActivePopup } from 'popup-build-render/builder';
 
-const stop = subscribeActivePopup((popup) => save(popup));
+const stop = subscribeActivePopups((popups) => save(popups));   // PopupModal[]
+const stop1 = subscribeActivePopup((popup) => save(popup));     // PopupModal | null
 ```
 
-Both fire only on real changes to the in-use popup — opening a template in the editor or editing a *different* one stays quiet.
+All fire only on real changes to the Active set — opening a template in the editor or editing an inactive one stays quiet.
 
-> The in-use mark lives in `localStorage` alongside the templates, so it's per-browser. If a storefront needs to know which popup to show, persist the JSON server-side from one of these callbacks — the radio is a local staging choice, not a shared source of truth.
+> The Active marks live in `localStorage` alongside the templates, so they're per-browser. If a storefront needs to know which popups to show, persist the JSON server-side from one of these callbacks — the checkboxes are a local staging choice, not a shared source of truth.
 
 ## Project structure
 
