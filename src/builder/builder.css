@@ -1,11 +1,28 @@
-:root {
+:root,
+[data-theme="light"] {
   --bg: #f3f4f6;
   --panel: #ffffff;
+  --card: #fbfbfc;
+  --input-bg: #ffffff;
   --border: #e5e7eb;
   --text: #111827;
   --muted: #6b7280;
   --accent: #3ab364;
   --danger: #dc2626;
+  --danger-border: #fecaca;
+}
+
+[data-theme="dark"] {
+  --bg: #0f172a;
+  --panel: #1e293b;
+  --card: #243244;
+  --input-bg: #0f172a;
+  --border: #334155;
+  --text: #f1f5f9;
+  --muted: #94a3b8;
+  --accent: #3ab364;
+  --danger: #f87171;
+  --danger-border: #7f1d1d;
 }
 
 * {
@@ -32,6 +49,8 @@ body {
 .saving-view {
   min-height: 100vh;
   padding: 40px 20px;
+  background: var(--bg);
+  color: var(--text);
 }
 .saving-inner {
   max-width: 640px;
@@ -150,6 +169,8 @@ body {
   display: grid;
   grid-template-columns: 400px 1fr;
   height: 100vh;
+  background: var(--bg);
+  color: var(--text);
 }
 .editing-view > * {
   overflow-y: auto;
@@ -195,6 +216,7 @@ body {
   border: none;
   padding: 4px 0;
   background: transparent;
+  color: var(--text);
   width: 100%;
   margin-bottom: 12px;
 }
@@ -328,7 +350,8 @@ textarea {
   border: 1px solid var(--border);
   border-radius: 8px;
   width: 100%;
-  background: #fff;
+  background: var(--input-bg);
+  color: var(--text);
 }
 textarea {
   resize: vertical;
@@ -341,7 +364,8 @@ button {
   cursor: pointer;
   border-radius: 8px;
   border: 1px solid var(--border);
-  background: #fff;
+  background: var(--input-bg);
+  color: var(--text);
   padding: 8px 12px;
   font-size: 13px;
 }
@@ -356,7 +380,7 @@ button.ghost {
 }
 button.danger {
   color: var(--danger);
-  border-color: #fecaca;
+  border-color: var(--danger-border);
 }
 button:hover {
   filter: brightness(0.97);
@@ -372,7 +396,7 @@ button:hover {
   border-radius: 10px;
   padding: 12px;
   margin-bottom: 10px;
-  background: #fbfbfc;
+  background: var(--card);
 }
 .item-card .item-head {
   display: flex;

@@ -13,6 +13,11 @@ export interface PopupBuilderProps {
    */
   lang?: Lang;
   /**
+   * Visual theme for the builder chrome. Defaults to 'light'. Only affects the
+   * builder UI, not the popup content the host edits.
+   */
+  theme?: 'light' | 'dark';
+  /**
    * Called with the single Active popup — on mount, when a different one is
    * marked, when it's edited, and with null when it's cleared or deleted. When
    * several are Active this is the first of them. Saves the host app from
@@ -27,7 +32,7 @@ export interface PopupBuilderProps {
   onActiveChangeMany?: (popups: PopupModal[]) => void;
 }
 
-export function App({ lang = 'en', onActiveChange, onActiveChangeMany }: PopupBuilderProps = {}) {
+export function App({ lang = 'en', theme = 'light', onActiveChange, onActiveChangeMany }: PopupBuilderProps = {}) {
   const selectedId = useBuilderStore((s) => s.selectedId);
   const popups = useBuilderStore((s) => s.popups);
   const selected = popups.find((p) => p.id === selectedId) ?? null;
@@ -39,7 +44,7 @@ export function App({ lang = 'en', onActiveChange, onActiveChangeMany }: PopupBu
   // Selecting a template moves you into editing; "← All templates" returns.
   return (
     <LangProvider lang={lang}>
-      <div className="popup-builder-root" dir={isRtl(lang) ? 'rtl' : 'ltr'}>
+      <div className="popup-builder-root" data-theme={theme} dir={isRtl(lang) ? 'rtl' : 'ltr'}>
         {selected ? <EditingView popup={selected} /> : <SavingView />}
       </div>
     </LangProvider>

@@ -4,11 +4,13 @@ import { App } from './App';
 import type { Lang } from './i18n';
 import './builder.css';
 
-// Dev entry only: `?lang=he` lets you preview a non-default language locally.
-const lang: Lang = new URLSearchParams(window.location.search).get('lang') === 'he' ? 'he' : 'en';
+// Dev entry only: `?lang=he` and `?theme=dark` preview those settings locally.
+const params = new URLSearchParams(window.location.search);
+const lang: Lang = params.get('lang') === 'he' ? 'he' : 'en';
+const theme = params.get('theme') === 'dark' ? 'dark' : 'light';
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <App lang={lang} />
+    <App lang={lang} theme={theme} />
   </StrictMode>,
 );
