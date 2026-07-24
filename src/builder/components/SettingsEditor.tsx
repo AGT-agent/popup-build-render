@@ -6,6 +6,7 @@ import {
   isUrlSafeToken,
   type CallbackPayloadEntry,
   type PopupDesign,
+  type PopupDirection,
   type PopupFrequency,
   type PopupModal,
   type PopupTrigger,
@@ -158,6 +159,18 @@ export function DesignEditor({ popup, onChange }: Props) {
           <label>{t.settings.layout}</label>
           <select value={popup.design} onChange={(e) => onChange({ design: e.target.value as PopupDesign })}>
             {DESIGNS.map((d) => <option key={d} value={d}>{d}</option>)}
+          </select>
+        </div>
+        <div className="field-row">
+          {/* Sets the popup's own text direction (renderer only) — English is
+              left-to-right, Hebrew right-to-left. Separate from the builder UI language. */}
+          <label>{t.settings.language}</label>
+          <select
+            value={popup.direction ?? 'ltr'}
+            onChange={(e) => onChange({ direction: e.target.value as PopupDirection })}
+          >
+            <option value="ltr">{t.settings.langEnglish}</option>
+            <option value="rtl">{t.settings.langHebrew}</option>
           </select>
         </div>
         <div className="field-row">

@@ -16,6 +16,12 @@ export type PopupDesign = 'basic' | 'image-behind' | 'image-right' | 'image-left
 /** How often the popup may re-open (enforced via localStorage). */
 export type PopupFrequency = 'session' | 'day' | 'ever' | 'always';
 
+/**
+ * Text direction of the rendered popup. Independent of the builder UI language —
+ * a merchant running an English builder can still author a right-to-left popup.
+ */
+export type PopupDirection = 'ltr' | 'rtl';
+
 export type ContentType =
   | 'heading'
   | 'text'
@@ -83,6 +89,8 @@ export interface PopupModal {
   method: 'GET' | 'POST';
   trigger: PopupTrigger;
   design: PopupDesign;
+  /** Text direction of the popup itself. Defaults to 'ltr' when omitted. */
+  direction?: PopupDirection;
   borderRadius?: number;
   imageUrl?: string;
   htmlId?: string;
@@ -111,6 +119,8 @@ export const CONTENT_TYPES: ContentType[] = [
 export const DESIGNS: PopupDesign[] = ['basic', 'image-behind', 'image-right', 'image-left'];
 
 export const FREQUENCIES: PopupFrequency[] = ['always', 'session', 'day', 'ever'];
+
+export const DIRECTIONS: PopupDirection[] = ['ltr', 'rtl'];
 
 export function isInputType(type: ContentType): boolean {
   return INPUT_TYPES.includes(type);

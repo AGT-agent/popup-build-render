@@ -33,6 +33,7 @@ export const POPUP_CSS = `
   cursor: pointer; color: inherit; opacity: 0.7;
 }
 .pm-close:hover { opacity: 1; }
+[dir="rtl"] .pm-close { right: auto; left: 12px; }
 .pm-heading { font-size: 22px; font-weight: 700; margin: 0; }
 .pm-text { font-size: 15px; margin: 0; opacity: 0.9; }
 .pm-spacer { flex: none; width: 100%; }

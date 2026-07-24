@@ -17,6 +17,7 @@ interface PopupModal {
   method: "GET" | "POST"; // request type to the merchant API
   trigger: PopupTrigger; // when the modal opens
   design: PopupDesign; // layout template
+  direction?: "ltr" | "rtl"; // text direction of the popup — default 'ltr'
   borderRadius?: number; // modal corner radius in px — default 14
   imageUrl?: string; // image source for the image-* designs
   htmlId?: string; // merchant-side mount point (see §7)
@@ -42,6 +43,7 @@ interface CallbackPayloadEntry {
 | `method`       | `'GET' \| 'POST'` | How the submit request is sent (see [§6 Submit assembly](#6-how-a-submit-is-assembled)).                                                                                        |
 | `trigger`      | `PopupTrigger`    | See [§2](#2-popuptrigger).                                                                                                                                                      |
 | `design`       | `PopupDesign`     | See [§3](#3-popupdesign).                                                                                                                                                       |
+| `direction`    | `"ltr" \| "rtl"?` | Text direction of the rendered popup (e.g. `rtl` for Hebrew). Independent of the builder UI language. Default `ltr`.                                                            |
 | `borderRadius` | `number?`         | Corner radius of the modal card, in px. Default `14`.                                                                                                                           |
 | `imageUrl`     | `string?`         | Image URL used by `image-behind` / `image-right` / `image-left`. Ignored by `basic`.                                                                                            |
 | `htmlId`       | `string?`         | If set, the modal renders **inline** into the merchant element with this id (see [§7](#7-htmlid--merchant-controlled-placement)). If absent, it renders as a full-page overlay. |

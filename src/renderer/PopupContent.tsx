@@ -181,6 +181,9 @@ export function PopupContent({ popup, onClose, fetchImpl, preview }: PopupConten
       className={`pm-card${sideBySide ? ' pm-has-image' : ''}`}
       role="dialog"
       aria-modal="true"
+      // Explicit so the popup keeps its own direction regardless of the host
+      // page (or builder chrome) it's rendered inside.
+      dir={popup.direction ?? 'ltr'}
       style={popup.borderRadius != null ? { borderRadius: popup.borderRadius } : undefined}
     >
       {popup.dismissible !== false && (
