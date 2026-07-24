@@ -144,6 +144,17 @@ function ItemCard({ item, index, count, onMove, onRemove, onUpdate }: ItemCardPr
           <input type="text" value={item.value ?? ''} onChange={(e) => onUpdate(item.id, { value: e.target.value })} />
         </div>
       )}
+      {(item.type === 'email' || item.type === 'free-text-input') && (
+        <div className="field-row">
+          <label>{t.content.placeholder}</label>
+          <input
+            type="text"
+            placeholder={item.value}
+            value={item.placeholder ?? ''}
+            onChange={(e) => onUpdate(item.id, { placeholder: e.target.value || undefined })}
+          />
+        </div>
+      )}
       {item.type === 'radio' && (
         <div className="field-row">
           <label>{t.content.groupLabel}</label>
@@ -278,8 +289,8 @@ function labelFor(t: Strings, type: ContentType): string {
     case 'heading': return t.content.headingText;
     case 'text': return t.content.paragraphText;
     case 'submit-button': return t.content.buttonLabel;
-    case 'email': return t.content.labelPlaceholder;
-    case 'free-text-input': return t.content.labelPlaceholder;
+    case 'email': return t.content.fieldLabel;
+    case 'free-text-input': return t.content.fieldLabel;
     case 'checkbox': return t.content.checkboxLabel;
     default: return t.content.valueLabel;
   }

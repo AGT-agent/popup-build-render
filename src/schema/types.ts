@@ -61,6 +61,7 @@ export interface ContentItem {
   order: number;
   type: ContentType;
   value?: string;
+  placeholder?: string; // email / free-text-input only — input placeholder, independent of the label
   height?: number; // spacer only — vertical gap in px
   styleProps?: StyleProps;
   options?: PopupOption[];

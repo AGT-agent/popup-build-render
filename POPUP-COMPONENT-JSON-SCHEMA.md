@@ -95,6 +95,7 @@ interface ContentItem {
   order: number; // sort order within the modal body
   type: ContentType; // what kind of item this is
   value?: string; // display text (heading / text); label for inputs / buttons
+  placeholder?: string; // email / free-text-input only — input placeholder; falls back to `value` when omitted
   height?: number; // spacer only — vertical gap in px (default 16)
   styleProps?: StyleProps; // merged into the React component's style
   options?: PopupOption[]; // radio only — the selectable choices (see §5)
@@ -142,12 +143,13 @@ Which fields are meaningful per type:
 | `heading`         | ✅ text shown     | —           | —                 | —          | a heading         |
 | `text`            | ✅ text shown     | —           | —                 | —          | a paragraph       |
 | `spacer`          | —                 | —           | —                 | —          | a vertical gap    |
-| `email`           | label/placeholder | —           | ✅                | optional   | an email input    |
+| `email`           | field label       | —           | ✅                | optional   | an email input    |
 | `radio`           | group label       | ✅ required | ✅                | optional   | a radio group     |
 | `checkbox`        | label             | —           | ✅                | optional   | a checkbox        |
-| `free-text-input` | label/placeholder | —           | ✅                | optional   | a text input      |
+| `free-text-input` | field label       | —           | ✅                | optional   | a text input      |
 | `submit-button`   | ✅ button label   | —           | —                 | —          | the submit button |
 
+- **`email` / `free-text-input`** have a separate `placeholder`. `value` is the visible field label; `placeholder` is the greyed-out hint inside the input, edited independently in the builder. When `placeholder` is omitted it falls back to `value`.
 - **`spacer`** ignores `value`; it renders an empty block whose height is `height` px (default `16`). Use it to add breathing room between items.
 - **`radio` options** live on the content item as `options: { label, value }[]`. The label is rendered; the selected option's `value` is what gets submitted. Each `value` must be **URL-safe** (see §6).
 - **`submit-button`** is what actually triggers the request assembly + `fetch`. Without it there's no way to submit; flagged as a proposal in case you'd rather the modal auto-submit some other way.

@@ -105,7 +105,7 @@ export function PopupContent({ popup, onClose, fetchImpl, preview }: PopupConten
             {item.value && <span>{item.value}{item.required ? ' *' : ''}</span>}
             <input
               type="email"
-              placeholder={item.value}
+              placeholder={item.placeholder ?? item.value}
               value={(values[item.id] as string) ?? ''}
               onChange={(e) => setValue(item.id, e.target.value)}
             />
@@ -117,7 +117,7 @@ export function PopupContent({ popup, onClose, fetchImpl, preview }: PopupConten
             {item.value && <span>{item.value}{item.required ? ' *' : ''}</span>}
             <input
               type="text"
-              placeholder={item.value}
+              placeholder={item.placeholder ?? item.value}
               value={(values[item.id] as string) ?? ''}
               onChange={(e) => setValue(item.id, e.target.value)}
             />
