@@ -151,7 +151,9 @@ function ItemCard({ item, index, count, onMove, onRemove, onUpdate }: ItemCardPr
         </div>
       )}
 
-      {(item.type === 'heading' || item.type === 'text' || item.type === 'submit-button') && (
+      {/* Align applies to every text-bearing section; color/background stay
+          scoped to the types that actually render them. Spacer has no text. */}
+      {item.type !== 'spacer' && (
         <div className="field-grid">
           <div className="field-row">
             <label>{t.content.align}</label>
@@ -164,15 +166,17 @@ function ItemCard({ item, index, count, onMove, onRemove, onUpdate }: ItemCardPr
               <option value="right">right</option>
             </select>
           </div>
-          <div className="field-row">
-            <label>{t.content.color}</label>
-            <input
-              type="text"
-              placeholder="#111827"
-              value={item.styleProps?.color ?? ''}
-              onChange={(e) => onUpdate(item.id, { styleProps: { ...item.styleProps, color: e.target.value || undefined } })}
-            />
-          </div>
+          {(item.type === 'heading' || item.type === 'text' || item.type === 'submit-button') && (
+            <div className="field-row">
+              <label>{t.content.color}</label>
+              <input
+                type="text"
+                placeholder="#111827"
+                value={item.styleProps?.color ?? ''}
+                onChange={(e) => onUpdate(item.id, { styleProps: { ...item.styleProps, color: e.target.value || undefined } })}
+              />
+            </div>
+          )}
           {item.type === 'submit-button' && (
             <div className="field-row">
               <label>{t.content.backgroundColor}</label>
