@@ -139,10 +139,9 @@ export function SettingsEditor({ popup, onChange }: Props) {
           />
         </div>
 
-        <CustomSubmitValues
-          entries={popup.onSubmitCallbackPayload}
-          onChange={(entries) => onChange({ onSubmitCallbackPayload: entries.length ? entries : undefined })}
-        />
+        {/* Custom submit callback values are hidden from the builder for now —
+            the data model and <CustomSubmitValues> component are kept intact so
+            this can be re-introduced later. */}
       </div>
     </>
   );
@@ -198,7 +197,9 @@ export function DesignEditor({ popup, onChange }: Props) {
   );
 }
 
-function CustomSubmitValues({
+// Currently hidden from the builder UI (see ContactEditor) but kept for
+// re-introduction later. Exported so it stays referenced under noUnusedLocals.
+export function CustomSubmitValues({
   entries,
   onChange,
 }: {
