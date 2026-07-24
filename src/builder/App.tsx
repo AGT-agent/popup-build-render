@@ -4,8 +4,14 @@ import type { PopupModal } from '@schema';
 import { selectActivePopup, selectActivePopups, useBuilderStore } from './store';
 import { SavingView } from './components/SavingView';
 import { EditingView } from './components/EditingView';
+import { LangProvider, isRtl, type Lang } from './i18n';
 
 export interface PopupBuilderProps {
+  /**
+   * UI language for the builder chrome. Defaults to 'en'. 'he' also flips the
+   * layout to right-to-left. Does not affect the popup content the host edits.
+   */
+  lang?: Lang;
   /**
    * Called with the single Active popup — on mount, when a different one is
    * marked, when it's edited, and with null when it's cleared or deleted. When
@@ -21,7 +27,7 @@ export interface PopupBuilderProps {
   onActiveChangeMany?: (popups: PopupModal[]) => void;
 }
 
-export function App({ onActiveChange, onActiveChangeMany }: PopupBuilderProps = {}) {
+export function App({ lang = 'en', onActiveChange, onActiveChangeMany }: PopupBuilderProps = {}) {
   const selectedId = useBuilderStore((s) => s.selectedId);
   const popups = useBuilderStore((s) => s.popups);
   const selected = popups.find((p) => p.id === selectedId) ?? null;
@@ -31,7 +37,13 @@ export function App({ onActiveChange, onActiveChangeMany }: PopupBuilderProps = 
 
   // Two parts: the saving view (template list) and the editing view.
   // Selecting a template moves you into editing; "← All templates" returns.
-  return selected ? <EditingView popup={selected} /> : <SavingView />;
+  return (
+    <LangProvider lang={lang}>
+      <div className="popup-builder-root" dir={isRtl(lang) ? 'rtl' : 'ltr'}>
+        {selected ? <EditingView popup={selected} /> : <SavingView />}
+      </div>
+    </LangProvider>
+  );
 }
 
 /**

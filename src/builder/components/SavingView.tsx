@@ -1,7 +1,9 @@
 import { useBuilderStore } from '../store';
+import { useT } from '../i18n';
 import { JsonPane } from './JsonPane';
 
 export function SavingView() {
+  const t = useT();
   const popups = useBuilderStore((s) => s.popups);
   const select = useBuilderStore((s) => s.select);
   const activeIds = useBuilderStore((s) => s.activeIds);
@@ -18,15 +20,15 @@ export function SavingView() {
     <div className="saving-view">
       <div className="saving-inner">
         <div className="head">
-          <h1>Popup Builder</h1>
+          <h1>{t.app.title}</h1>
           <div className="btn-row">
-            <button className="primary" onClick={() => createPopup(false)}>+ New popup</button>
-            <button onClick={() => createPopup(true)}>Example</button>
+            <button className="primary" onClick={() => createPopup(false)}>{t.app.newPopup}</button>
+            <button onClick={() => createPopup(true)}>{t.app.example}</button>
           </div>
         </div>
-        <p className="sub">{popups.length} saved template{popups.length === 1 ? '' : 's'}</p>
+        <p className="sub">{t.app.savedCount(popups.length)}</p>
 
-        {popups.length === 0 && <p className="empty">No templates yet — create one to get started.</p>}
+        {popups.length === 0 && <p className="empty">{t.app.emptyHint}</p>}
 
         {popups.map((p) => {
           const isActive = activeIds.includes(p.id);
@@ -37,27 +39,27 @@ export function SavingView() {
               onClick={() => select(p.id)}
             >
               {/* Marking a row Active must not also open it in the editor. */}
-              <label className="t-check" title="Mark this template Active" onClick={(e) => e.stopPropagation()}>
+              <label className="t-check" title={t.app.markActiveTitle} onClick={(e) => e.stopPropagation()}>
                 <input
                   type="checkbox"
                   checked={isActive}
                   onChange={() => toggleActive(p.id)}
                 />
-                Active
+                {t.app.active}
               </label>
               <div className="t-body">
-                <div className="t-name">{p.name || 'Untitled'}</div>
-                <div className="t-meta">{p.design} · {p.trigger.type} · {p.contentItems.length} items</div>
+                <div className="t-name">{p.name || t.app.untitled}</div>
+                <div className="t-meta">{p.design} · {p.trigger.type} · {t.app.items(p.contentItems.length)}</div>
               </div>
               <div className="t-actions">
                 <button
                   className="danger"
                   onClick={(e) => {
                     e.stopPropagation();
-                    if (confirm(`Delete "${p.name || 'Untitled'}"?`)) removePopup(p.id);
+                    if (confirm(t.app.confirmDelete(p.name || t.app.untitled))) removePopup(p.id);
                   }}
                 >
-                  Delete
+                  {t.app.delete}
                 </button>
               </div>
             </div>
@@ -69,29 +71,29 @@ export function SavingView() {
             <div className="t-body">
               <div className="t-name">
                 {singleMode
-                  ? `Using “${activePopups[0].name || 'Untitled'}”`
-                  : `Using ${activePopups.length} template${activePopups.length === 1 ? '' : 's'}`}
+                  ? t.app.usingSingle(activePopups[0].name || t.app.untitled)
+                  : t.app.usingMany(activePopups.length)}
               </div>
               <div className="t-meta">
-                The JSON a host app gets from{' '}
+                {t.app.jsonFromHost}{' '}
                 <code>{singleMode ? 'getActivePopup()' : 'getActivePopups()'}</code>.
               </div>
-              <label className="t-check single-toggle" title="Export one JSON object instead of an array">
+              <label className="t-check single-toggle" title={t.app.singleToggleTitle}>
                 <input
                   type="checkbox"
                   checked={singleMode}
                   onChange={(e) => setSingleMode(e.target.checked)}
                 />
-                Use just one (export a single JSON)
+                {t.app.singleToggleLabel}
               </label>
             </div>
             <div className="btn-row">
               {singleMode ? (
-                <JsonPane popup={activePopups[0]} label="Show JSON" />
+                <JsonPane popup={activePopups[0]} label={t.app.showJson} />
               ) : (
-                <JsonPane popups={activePopups} label="Show JSON" />
+                <JsonPane popups={activePopups} label={t.app.showJson} />
               )}
-              <button className="ghost" onClick={clearActive}>Clear</button>
+              <button className="ghost" onClick={clearActive}>{t.app.clear}</button>
             </div>
           </div>
         )}

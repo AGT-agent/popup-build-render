@@ -1,9 +1,10 @@
 // Builder public API. Import 'popup-build-render/builder.css' alongside this —
 // Vite emits the stylesheet as a separate file rather than injecting it.
-import './builder.css';
+import "./builder.css";
 
-export { App as PopupBuilder } from './App';
-export type { PopupBuilderProps } from './App';
+export { App as PopupBuilder } from "./App";
+export type { PopupBuilderProps } from "./App";
+export type { Lang } from "./i18n";
 export {
   useBuilderStore,
   getAllPopups,
@@ -13,5 +14,5 @@ export {
   selectActivePopups,
   subscribeActivePopup,
   subscribeActivePopups,
-} from './store';
-export type { BuilderState } from './store';
+} from "./store";
+export type { BuilderState } from "./store";

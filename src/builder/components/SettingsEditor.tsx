@@ -11,6 +11,7 @@ import {
   type PopupTrigger,
   type SubmitSuccess,
 } from '@schema';
+import { useT } from '../i18n';
 
 interface Props {
   popup: PopupModal;
@@ -22,6 +23,7 @@ const SUCCESS_TYPES: SubmitSuccess['type'][] = ['close', 'message', 'coupon', 'r
 
 /** Delivery + Submission — the "Settings" tab. */
 export function SettingsEditor({ popup, onChange }: Props) {
+  const t = useT();
   const setTrigger = (type: PopupTrigger['type']) => {
     let next: PopupTrigger;
     if (type === 'delay') next = { type, seconds: 5 };
@@ -34,11 +36,11 @@ export function SettingsEditor({ popup, onChange }: Props) {
     <>
       {/* --- Delivery (mount layer) --- */}
       <div className="section">
-        <h3>Delivery · when &amp; how it opens</h3>
+        <h3>{t.settings.deliveryHeading}</h3>
 
         <div className="field-grid">
           <div className="field-row">
-            <label>Trigger</label>
+            <label>{t.settings.trigger}</label>
             <select value={popup.trigger.type} onChange={(e) => setTrigger(e.target.value as PopupTrigger['type'])}>
               {TRIGGER_TYPES.map((t) => <option key={t} value={t}>{t}</option>)}
             </select>
@@ -46,7 +48,7 @@ export function SettingsEditor({ popup, onChange }: Props) {
 
           {popup.trigger.type === 'delay' && (
             <div className="field-row">
-              <label>Delay (seconds)</label>
+              <label>{t.settings.delaySeconds}</label>
               <input
                 type="number"
                 value={popup.trigger.seconds}
@@ -56,7 +58,7 @@ export function SettingsEditor({ popup, onChange }: Props) {
           )}
           {popup.trigger.type === 'scroll' && (
             <div className="field-row">
-              <label>Scroll (%)</label>
+              <label>{t.settings.scrollPercent}</label>
               <input
                 type="number"
                 value={popup.trigger.percent}
@@ -68,7 +70,7 @@ export function SettingsEditor({ popup, onChange }: Props) {
 
         <div className="field-grid">
           <div className="field-row">
-            <label>Frequency</label>
+            <label>{t.settings.frequency}</label>
             <select
               value={popup.frequency ?? 'always'}
               onChange={(e) => onChange({ frequency: e.target.value as PopupFrequency })}
@@ -83,16 +85,16 @@ export function SettingsEditor({ popup, onChange }: Props) {
               checked={popup.dismissible !== false}
               onChange={(e) => onChange({ dismissible: e.target.checked })}
             />
-            <label htmlFor="dismissible" style={{ margin: 0 }}>Dismissible (X / overlay / esc)</label>
+            <label htmlFor="dismissible" style={{ margin: 0 }}>{t.settings.dismissible}</label>
           </div>
         </div>
 
         <div className="field-row">
-          <label>htmlId (only show on pages containing this element — leave blank to always show)</label>
+          <label>{t.settings.htmlIdLabel}</label>
           <input
             type="text"
             value={popup.htmlId ?? ''}
-            placeholder="some-html-id"
+            placeholder={t.settings.htmlIdPlaceholder}
             onChange={(e) => onChange({ htmlId: e.target.value || undefined })}
           />
         </div>
@@ -100,14 +102,14 @@ export function SettingsEditor({ popup, onChange }: Props) {
 
       {/* --- Submission --- */}
       <div className="section">
-        <h3>Submission</h3>
+        <h3>{t.settings.submissionHeading}</h3>
         <div className="field-grid">
           <div className="field-row">
-            <label>Endpoint URL</label>
+            <label>{t.settings.endpointUrl}</label>
             <input type="url" value={popup.url} onChange={(e) => onChange({ url: e.target.value })} />
           </div>
           <div className="field-row">
-            <label>Method</label>
+            <label>{t.settings.method}</label>
             <select value={popup.method} onChange={(e) => onChange({ method: e.target.value as 'GET' | 'POST' })}>
               <option value="POST">POST</option>
               <option value="GET">GET</option>
@@ -116,7 +118,7 @@ export function SettingsEditor({ popup, onChange }: Props) {
         </div>
 
         <div className="field-row">
-          <label>On success</label>
+          <label>{t.settings.onSuccess}</label>
           <select
             value={popup.onSuccess?.type ?? 'close'}
             onChange={(e) => onChange({ onSuccess: buildSuccess(e.target.value as SubmitSuccess['type'], popup.onSuccess) })}
@@ -127,11 +129,11 @@ export function SettingsEditor({ popup, onChange }: Props) {
         <SuccessFields success={popup.onSuccess} onChange={(s) => onChange({ onSuccess: s })} />
 
         <div className="field-row">
-          <label>On error message</label>
+          <label>{t.settings.onErrorMessage}</label>
           <input
             type="text"
             value={popup.onError?.text ?? ''}
-            placeholder="Something went wrong — please try again."
+            placeholder={t.settings.onErrorPlaceholder}
             onChange={(e) => onChange({ onError: e.target.value ? { type: 'message', text: e.target.value } : undefined })}
           />
         </div>
@@ -147,18 +149,19 @@ export function SettingsEditor({ popup, onChange }: Props) {
 
 /** Layout / appearance — the "Design" tab. */
 export function DesignEditor({ popup, onChange }: Props) {
+  const t = useT();
   return (
     <div className="section">
-      <h3>Design</h3>
+      <h3>{t.settings.designHeading}</h3>
       <div className="field-grid">
         <div className="field-row">
-          <label>Layout</label>
+          <label>{t.settings.layout}</label>
           <select value={popup.design} onChange={(e) => onChange({ design: e.target.value as PopupDesign })}>
             {DESIGNS.map((d) => <option key={d} value={d}>{d}</option>)}
           </select>
         </div>
         <div className="field-row">
-          <label>Border radius (px)</label>
+          <label>{t.settings.borderRadius}</label>
           <input
             type="number"
             min={0}
@@ -169,7 +172,7 @@ export function DesignEditor({ popup, onChange }: Props) {
         </div>
         {designUsesImage(popup.design) && (
           <div className="field-row">
-            <label>Image URL</label>
+            <label>{t.settings.imageUrl}</label>
             <input
               type="url"
               value={popup.imageUrl ?? ''}
@@ -189,11 +192,12 @@ function CustomSubmitValues({
   entries?: CallbackPayloadEntry[];
   onChange: (entries: CallbackPayloadEntry[]) => void;
 }) {
+  const t = useT();
   const rows = entries ?? [];
 
   return (
     <div className="field-row">
-      <label>Custom submit callback values</label>
+      <label>{t.settings.customSubmitValues}</label>
       {rows.map((row, i) => {
         const badKey = Boolean(row.key) && !isUrlSafeToken(row.key);
         return (
@@ -202,13 +206,13 @@ function CustomSubmitValues({
               <input
                 type="text"
                 className={badKey ? 'invalid' : undefined}
-                placeholder="key"
+                placeholder={t.settings.keyPlaceholder}
                 value={row.key}
                 onChange={(e) => onChange(rows.map((r, j) => (j === i ? { ...r, key: e.target.value } : r)))}
               />
               <input
                 type="text"
-                placeholder="value"
+                placeholder={t.settings.valuePlaceholder}
                 value={row.value}
                 onChange={(e) => onChange(rows.map((r, j) => (j === i ? { ...r, value: e.target.value } : r)))}
               />
@@ -218,7 +222,7 @@ function CustomSubmitValues({
           </div>
         );
       })}
-      <button className="ghost" onClick={() => onChange([...rows, { key: '', value: '' }])}>+ value</button>
+      <button className="ghost" onClick={() => onChange([...rows, { key: '', value: '' }])}>{t.settings.addValue}</button>
     </div>
   );
 }
@@ -237,12 +241,13 @@ function buildSuccess(type: SubmitSuccess['type'], prev?: SubmitSuccess): Submit
 }
 
 function SuccessFields({ success, onChange }: { success?: SubmitSuccess; onChange: (s: SubmitSuccess) => void }) {
+  const t = useT();
   if (!success || success.type === 'close') return null;
 
   if (success.type === 'message') {
     return (
       <div className="field-row">
-        <label>Success message</label>
+        <label>{t.settings.successMessage}</label>
         <input type="text" value={success.text} onChange={(e) => onChange({ ...success, text: e.target.value })} />
       </div>
     );
@@ -250,7 +255,7 @@ function SuccessFields({ success, onChange }: { success?: SubmitSuccess; onChang
   if (success.type === 'redirect') {
     return (
       <div className="field-row">
-        <label>Redirect URL</label>
+        <label>{t.settings.redirectUrl}</label>
         <input type="url" value={success.url} onChange={(e) => onChange({ ...success, url: e.target.value })} />
       </div>
     );
@@ -259,19 +264,19 @@ function SuccessFields({ success, onChange }: { success?: SubmitSuccess; onChang
   return (
     <div className="field-grid">
       <div className="field-row">
-        <label>Coupon intro text</label>
+        <label>{t.settings.couponIntro}</label>
         <input type="text" value={success.text ?? ''} onChange={(e) => onChange({ ...success, text: e.target.value })} />
       </div>
       <div className="field-row">
-        <label>Static code</label>
+        <label>{t.settings.staticCode}</label>
         <input type="text" value={success.code ?? ''} onChange={(e) => onChange({ ...success, code: e.target.value })} />
       </div>
       <div className="field-row">
-        <label>…or code from response path</label>
+        <label>{t.settings.codeFromResponse}</label>
         <input
           type="text"
           value={success.codeFromResponsePath ?? ''}
-          placeholder="data.discountCode"
+          placeholder={t.settings.codeFromResponsePlaceholder}
           onChange={(e) => onChange({ ...success, codeFromResponsePath: e.target.value || undefined })}
         />
       </div>

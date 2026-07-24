@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import type { PopupModal } from '@schema';
 import { PopupMount } from '@renderer';
+import { useT } from '../i18n';
 
 /** A mock fetch so preview submits resolve without hitting a real endpoint. */
 function makeMockFetch(): typeof fetch {
@@ -12,14 +13,15 @@ function makeMockFetch(): typeof fetch {
 }
 
 export function PreviewPane({ popup }: { popup: PopupModal }) {
+  const t = useT();
   const [replayKey, setReplayKey] = useState(0);
   const mockFetch = useMemo(makeMockFetch, []);
 
   return (
     <div className="preview-wrap">
       <div className="toolbar" style={{ marginBottom: 8 }}>
-        <span className="pill">Live preview</span>
-        <button onClick={() => setReplayKey((k) => k + 1)}>↻ Replay</button>
+        <span className="pill">{t.preview.livePreview}</span>
+        <button onClick={() => setReplayKey((k) => k + 1)}>{t.preview.replay}</button>
       </div>
       <div className="preview-frame">
         {/* forceOpen bypasses trigger + frequency; preview blocks real navigation. */}
@@ -33,7 +35,7 @@ export function PreviewPane({ popup }: { popup: PopupModal }) {
         />
       </div>
       <p className="sub" style={{ fontSize: 12, color: 'var(--muted)', marginTop: 8 }}>
-        Preview ignores the trigger and frequency cap and never submits to a real endpoint.
+        {t.preview.disclaimer}
       </p>
     </div>
   );

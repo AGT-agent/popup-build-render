@@ -10,6 +10,7 @@ import {
   type PopupModal,
   type RequestTarget,
 } from '@schema';
+import { useT, type Strings } from '../i18n';
 
 interface Props {
   popup: PopupModal;
@@ -17,6 +18,7 @@ interface Props {
 }
 
 export function ContentItemsEditor({ popup, onChange }: Props) {
+  const t = useT();
   const items = [...popup.contentItems].sort((a, b) => a.order - b.order);
 
   const commit = (next: ContentItem[]) => {
@@ -48,7 +50,7 @@ export function ContentItemsEditor({ popup, onChange }: Props) {
 
   return (
     <div className="section">
-      <h3>Content items</h3>
+      <h3>{t.content.heading}</h3>
 
       {items.map((item, i) => (
         <ItemCard
@@ -68,6 +70,7 @@ export function ContentItemsEditor({ popup, onChange }: Props) {
 }
 
 function AddSectionButton({ onAdd }: { onAdd: (type: ContentType) => void }) {
+  const t = useT();
   const [open, setOpen] = useState(false);
 
   return (
@@ -89,8 +92,8 @@ function AddSectionButton({ onAdd }: { onAdd: (type: ContentType) => void }) {
           ))}
         </div>
       )}
-      <button className="add-plus" aria-label="Add section" onClick={() => setOpen((o) => !o)}>
-        + Add section
+      <button className="add-plus" aria-label={t.content.addSectionAria} onClick={() => setOpen((o) => !o)}>
+        {t.content.addSection}
       </button>
     </div>
   );
@@ -106,6 +109,7 @@ interface ItemCardProps {
 }
 
 function ItemCard({ item, index, count, onMove, onRemove, onUpdate }: ItemCardProps) {
+  const t = useT();
   const input = isInputType(item.type);
 
   return (
@@ -125,7 +129,7 @@ function ItemCard({ item, index, count, onMove, onRemove, onUpdate }: ItemCardPr
 
       {item.type === 'spacer' && (
         <div className="field-row">
-          <label>Height (px)</label>
+          <label>{t.content.heightPx}</label>
           <input
             type="number"
             min={0}
@@ -136,13 +140,13 @@ function ItemCard({ item, index, count, onMove, onRemove, onUpdate }: ItemCardPr
       )}
       {item.type !== 'radio' && item.type !== 'spacer' && (
         <div className="field-row">
-          <label>{labelFor(item.type)}</label>
+          <label>{labelFor(t, item.type)}</label>
           <input type="text" value={item.value ?? ''} onChange={(e) => onUpdate(item.id, { value: e.target.value })} />
         </div>
       )}
       {item.type === 'radio' && (
         <div className="field-row">
-          <label>Group label</label>
+          <label>{t.content.groupLabel}</label>
           <input type="text" value={item.value ?? ''} onChange={(e) => onUpdate(item.id, { value: e.target.value })} />
         </div>
       )}
@@ -150,7 +154,7 @@ function ItemCard({ item, index, count, onMove, onRemove, onUpdate }: ItemCardPr
       {(item.type === 'heading' || item.type === 'text' || item.type === 'submit-button') && (
         <div className="field-grid">
           <div className="field-row">
-            <label>Align</label>
+            <label>{t.content.align}</label>
             <select
               value={item.styleProps?.align ?? 'center'}
               onChange={(e) => onUpdate(item.id, { styleProps: { ...item.styleProps, align: e.target.value as 'left' | 'center' | 'right' } })}
@@ -161,7 +165,7 @@ function ItemCard({ item, index, count, onMove, onRemove, onUpdate }: ItemCardPr
             </select>
           </div>
           <div className="field-row">
-            <label>Color</label>
+            <label>{t.content.color}</label>
             <input
               type="text"
               placeholder="#111827"
@@ -171,7 +175,7 @@ function ItemCard({ item, index, count, onMove, onRemove, onUpdate }: ItemCardPr
           </div>
           {item.type === 'submit-button' && (
             <div className="field-row">
-              <label>Background color</label>
+              <label>{t.content.backgroundColor}</label>
               <input
                 type="text"
                 value={item.styleProps?.backgroundColor ?? ''}
@@ -193,11 +197,11 @@ function ItemCard({ item, index, count, onMove, onRemove, onUpdate }: ItemCardPr
               checked={Boolean(item.required)}
               onChange={(e) => onUpdate(item.id, { required: e.target.checked })}
             />
-            <label htmlFor={`req-${item.id}`} style={{ margin: 0 }}>Required</label>
+            <label htmlFor={`req-${item.id}`} style={{ margin: 0 }}>{t.content.required}</label>
           </div>
           <div className="field-grid">
             <div className="field-row">
-              <label>Submit target</label>
+              <label>{t.content.submitTarget}</label>
               <select
                 value={item.onSubmitRequest?.target ?? 'body'}
                 onChange={(e) => onUpdate(item.id, { onSubmitRequest: { ...item.onSubmitRequest, target: e.target.value as RequestTarget } })}
@@ -207,7 +211,7 @@ function ItemCard({ item, index, count, onMove, onRemove, onUpdate }: ItemCardPr
               </select>
             </div>
             <div className="field-row">
-              <label>Submit key</label>
+              <label>{t.content.submitKey}</label>
               <input
                 type="text"
                 className={item.onSubmitRequest?.key && !isUrlSafeToken(item.onSubmitRequest.key) ? 'invalid' : undefined}
@@ -227,12 +231,13 @@ function ItemCard({ item, index, count, onMove, onRemove, onUpdate }: ItemCardPr
 }
 
 function RadioOptions({ item, onUpdate }: { item: ContentItem; onUpdate: ItemCardProps['onUpdate'] }) {
+  const t = useT();
   const options = item.options ?? [];
   const set = (opts: typeof options) => onUpdate(item.id, { options: opts });
 
   return (
     <div className="field-row">
-      <label>Options</label>
+      <label>{t.content.options}</label>
       {options.map((opt, i) => {
         const badValue = Boolean(opt.value) && !isUrlSafeToken(opt.value);
         return (
@@ -240,14 +245,14 @@ function RadioOptions({ item, onUpdate }: { item: ContentItem; onUpdate: ItemCar
             <div className="field-row inline">
               <input
                 type="text"
-                placeholder="label"
+                placeholder={t.content.optionLabel}
                 value={opt.label}
                 onChange={(e) => set(options.map((o, j) => (j === i ? { ...o, label: e.target.value } : o)))}
               />
               <input
                 type="text"
                 className={badValue ? 'invalid' : undefined}
-                placeholder="value"
+                placeholder={t.content.optionValue}
                 value={opt.value}
                 onChange={(e) => set(options.map((o, j) => (j === i ? { ...o, value: e.target.value } : o)))}
               />
@@ -258,20 +263,20 @@ function RadioOptions({ item, onUpdate }: { item: ContentItem; onUpdate: ItemCar
         );
       })}
       <button className="ghost" onClick={() => set([...options, { label: `Option ${options.length + 1}`, value: `opt${options.length + 1}` }])}>
-        + option
+        {t.content.addOption}
       </button>
     </div>
   );
 }
 
-function labelFor(type: ContentType): string {
+function labelFor(t: Strings, type: ContentType): string {
   switch (type) {
-    case 'heading': return 'Heading text';
-    case 'text': return 'Paragraph text';
-    case 'submit-button': return 'Button label';
-    case 'email': return 'Label / placeholder';
-    case 'free-text-input': return 'Label / placeholder';
-    case 'checkbox': return 'Checkbox label';
-    default: return 'Value';
+    case 'heading': return t.content.headingText;
+    case 'text': return t.content.paragraphText;
+    case 'submit-button': return t.content.buttonLabel;
+    case 'email': return t.content.labelPlaceholder;
+    case 'free-text-input': return t.content.labelPlaceholder;
+    case 'checkbox': return t.content.checkboxLabel;
+    default: return t.content.valueLabel;
   }
 }

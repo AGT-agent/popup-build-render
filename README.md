@@ -89,6 +89,18 @@ import { PopupBuilder } from 'popup-build-render/builder';
 <PopupBuilder onActiveChange={(popup) => save(popup)} />   // single/first
 ```
 
+### Language
+
+The builder UI ships with English (`en`, default) and Hebrew (`he`). Pass `lang` to switch; `he` also flips the chrome to right-to-left. This affects only the builder's own interface, not the popup content the host edits.
+
+```tsx
+<PopupBuilder lang="he" />
+```
+
+Translations live in `src/builder/i18n/en.ts` and `src/builder/i18n/he.ts` — one file per language, same shape (TypeScript enforces it). Add a language by adding a file and registering it in `src/builder/i18n/index.tsx`.
+
+### Subscribing outside React
+
 Outside React, subscribe to the store directly. Both return an unsubscribe function:
 
 ```ts

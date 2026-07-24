@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { validatePopup, type PopupModal } from '@schema';
+import { useT } from '../i18n';
 
 /**
  * "View JSON" button + modal. Pass `popup` to emit a single object, or `popups`
@@ -9,12 +10,13 @@ import { validatePopup, type PopupModal } from '@schema';
 export function JsonPane({
   popup,
   popups,
-  label = 'View JSON',
+  label,
 }: {
   popup?: PopupModal;
   popups?: PopupModal[];
   label?: string;
 }) {
+  const t = useT();
   const [open, setOpen] = useState(false);
   const isArray = popups !== undefined;
   const items = isArray ? popups : popup ? [popup] : [];
@@ -27,7 +29,7 @@ export function JsonPane({
   return (
     <>
       <button onClick={() => setOpen(true)}>
-        {label}{errorCount > 0 ? ` · ${errorCount} error${errorCount === 1 ? '' : 's'}` : ''}
+        {label ?? t.json.viewJson}{errorCount > 0 ? ` · ${t.json.errors(errorCount)}` : ''}
       </button>
       {open && <JsonModal items={items} value={value} onClose={() => setOpen(false)} />}
     </>
@@ -43,6 +45,7 @@ function JsonModal({
   value: PopupModal | PopupModal[];
   onClose: () => void;
 }) {
+  const t = useT();
   const [copied, setCopied] = useState(false);
   const json = JSON.stringify(value, null, 2);
   const issues = items.flatMap((p) => validatePopup(p));
@@ -57,7 +60,7 @@ function JsonModal({
     <div className="json-modal-overlay" onClick={(e) => e.target === e.currentTarget && onClose()}>
       <div className="json-modal" role="dialog" aria-modal="true">
         <div className="json-modal-head">
-          <strong>JSON</strong>
+          <strong>{t.json.title}</strong>
           <div className="btn-row">
             <button
               onClick={() => {
@@ -66,9 +69,9 @@ function JsonModal({
                 setTimeout(() => setCopied(false), 1200);
               }}
             >
-              {copied ? 'Copied' : 'Copy'}
+              {copied ? t.json.copied : t.json.copy}
             </button>
-            <button className="ghost" onClick={onClose}>Close</button>
+            <button className="ghost" onClick={onClose}>{t.json.close}</button>
           </div>
         </div>
         <div className="json-modal-body">

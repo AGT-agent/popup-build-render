@@ -5,13 +5,15 @@ import { SettingsEditor, DesignEditor } from './SettingsEditor';
 import { ContentItemsEditor } from './ContentItemsEditor';
 import { PreviewPane } from './PreviewPane';
 import { JsonPane } from './JsonPane';
+import { useT, type Strings } from '../i18n';
 
 type Tab = 'setup' | 'layout' | 'design';
 
-const TABS: { id: Tab; label: string; icon: JSX.Element }[] = [
+// `labelKey` resolves against `t.edit` at render so tabs stay translated.
+const TABS: { id: Tab; labelKey: keyof Strings['edit']; icon: JSX.Element }[] = [
   {
     id: 'setup',
-    label: 'Setup',
+    labelKey: 'tabSetup',
     icon: (
       <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
         <circle cx="12" cy="12" r="3" />
@@ -21,7 +23,7 @@ const TABS: { id: Tab; label: string; icon: JSX.Element }[] = [
   },
   {
     id: 'layout',
-    label: 'Layout',
+    labelKey: 'tabLayout',
     icon: (
       <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
         <rect x="3" y="3" width="7" height="7" rx="1" />
@@ -33,7 +35,7 @@ const TABS: { id: Tab; label: string; icon: JSX.Element }[] = [
   },
   {
     id: 'design',
-    label: 'Design',
+    labelKey: 'tabDesign',
     icon: (
       <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
         <path d="M2 12a10 10 0 1 0 20 0c0-5.5-4.5-6-9-6-2 0-3 1-3 2.5S11.5 12 9 12s-4-1-4-3" />
@@ -46,6 +48,7 @@ const TABS: { id: Tab; label: string; icon: JSX.Element }[] = [
 ];
 
 export function EditingView({ popup }: { popup: PopupModal }) {
+  const t = useT();
   const select = useBuilderStore((s) => s.select);
   const updatePopup = useBuilderStore((s) => s.updatePopup);
   const [tab, setTab] = useState<Tab>('setup');
@@ -56,18 +59,18 @@ export function EditingView({ popup }: { popup: PopupModal }) {
     <div className="editing-view">
       {/* Narrow menu on the left */}
       <div className="edit-menu">
-        <button className="ghost back" onClick={() => select(null)}>← All templates</button>
+        <button className="ghost back" onClick={() => select(null)}>{t.edit.backToTemplates}</button>
 
         {/* Fixed tab bar */}
         <div className="tab-bar">
-          {TABS.map((t) => (
+          {TABS.map((tabDef) => (
             <button
-              key={t.id}
-              className={`tab-btn${tab === t.id ? ' active' : ''}`}
-              onClick={() => setTab(t.id)}
+              key={tabDef.id}
+              className={`tab-btn${tab === tabDef.id ? ' active' : ''}`}
+              onClick={() => setTab(tabDef.id)}
             >
-              {t.icon}
-              <span>{t.label}</span>
+              {tabDef.icon}
+              <span>{t.edit[tabDef.labelKey]}</span>
             </button>
           ))}
         </div>

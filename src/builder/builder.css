@@ -23,6 +23,11 @@ body {
   background: var(--bg);
 }
 
+/* Language/RTL wrapper — carries `dir` without adding a layout box. */
+.popup-builder-root {
+  display: contents;
+}
+
 /* ---------- Saving view (template list) ---------- */
 .saving-view {
   min-height: 100vh;
@@ -148,6 +153,13 @@ body {
 }
 .editing-view > * {
   overflow-y: auto;
+}
+/* Keep the menu column on the left even in RTL; only its content flips. */
+[dir="rtl"] .editing-view {
+  direction: ltr;
+}
+[dir="rtl"] .editing-view > * {
+  direction: rtl;
 }
 
 .edit-menu {
