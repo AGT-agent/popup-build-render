@@ -34,9 +34,6 @@ export function PreviewPane({ popup }: { popup: PopupModal }) {
           onClose={() => setReplayKey((k) => k + 1)}
         />
       </div>
-      <p className="sub" style={{ fontSize: 12, color: 'var(--muted)', marginTop: 8 }}>
-        {t.preview.disclaimer}
-      </p>
     </div>
   );
 }

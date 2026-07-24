@@ -93,7 +93,10 @@ export function EditingView({ popup }: { popup: PopupModal }) {
         <div className="display-preview">
           <PreviewPane popup={popup} />
         </div>
-        <div className="btn-row" style={{ justifyContent: 'flex-end' }}>
+        <div className="btn-row" style={{ justifyContent: 'space-between', alignItems: 'center' }}>
+          <p className="sub" style={{ fontSize: 12, color: 'var(--muted)', margin: 0 }}>
+            {t.preview.disclaimer}
+          </p>
           <JsonPane popup={popup} />
         </div>
       </div>
