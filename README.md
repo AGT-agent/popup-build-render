@@ -99,6 +99,18 @@ The builder UI ships with English (`en`, default) and Hebrew (`he`). Pass `lang`
 
 Translations live in `src/builder/i18n/en.ts` and `src/builder/i18n/he.ts` — one file per language, same shape (TypeScript enforces it). Add a language by adding a file and registering it in `src/builder/i18n/index.tsx`.
 
+### Theme
+
+The builder ships with a `light` (default) and a `dark` theme. Pass `theme` to switch. Like `lang`, this affects only the builder's own chrome — the popup being edited keeps the colors set in its own design section, in both themes.
+
+```tsx
+<PopupBuilder theme="dark" />
+```
+
+The theme is applied as `data-theme` on the builder's root element, and every color in `builder.css` comes from CSS variables defined per theme — so overriding `--bg`, `--panel`, `--text`, `--accent`, etc. under `[data-theme="dark"]` is enough to retheme it.
+
+In local dev, `npm run dev` accepts `?theme=dark` (and `?lang=he`) to preview without editing code: <http://localhost:5173/?theme=dark>
+
 ### Subscribing outside React
 
 Outside React, subscribe to the store directly. Both return an unsubscribe function:
