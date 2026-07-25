@@ -107,7 +107,7 @@ The builder ships with a `light` (default) and a `dark` theme. Pass `theme` to s
 <PopupBuilder theme="dark" />
 ```
 
-The theme is applied as `data-theme` on the builder's root element, and every color in `builder.css` comes from CSS variables defined per theme — so overriding `--bg`, `--panel`, `--text`, `--accent`, etc. under `[data-theme="dark"]` is enough to retheme it.
+The theme is applied as `data-theme` on the builder's root element, and every color in `builder.css` comes from CSS variables defined per theme — so overriding `--bg`, `--panel`, `--text`, `--accent`, etc. under `[data-theme="dark"]` is enough to restyle it.
 
 In local dev, `npm run dev` accepts `?theme=dark` (and `?lang=he`) to preview without editing code: <http://localhost:5173/?theme=dark>
 

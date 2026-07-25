@@ -38,8 +38,11 @@ export const POPUP_CSS = `
 .pm-text { font-size: 15px; margin: 0; opacity: 0.9; }
 .pm-spacer { flex: none; width: 100%; }
 .pm-field { display: flex; flex-direction: column; gap: 6px; font-size: 14px; }
+/* Colors are declared, not inherited: a host stylesheet with a bare \`input\`
+   rule (the builder's own dark theme, for one) would otherwise bleed through. */
 .pm-field input[type="email"], .pm-field input[type="text"] {
   padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 15px;
+  background: #fff; color: #111827;
 }
 .pm-radio-group { display: flex; flex-direction: column; gap: 8px; }
 .pm-radio-option, .pm-checkbox { display: flex; align-items: center; gap: 8px; cursor: pointer; }
