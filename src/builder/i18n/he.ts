@@ -5,8 +5,8 @@ import type { Strings } from "./en";
 export const he: Strings = {
   app: {
     title: "בונה פופאפים",
-    newPopup: "+ פופאפ חדש",
-    example: "דוגמה",
+    newPopup: "+ התחל עם תבנית בסיסית",
+    example: "+ התחל עם תבנית דוגמה",
     savedCount: (n) => (n === 1 ? "תבנית שמורה אחת" : `${n} תבניות שמורות`),
     emptyHint: "אין עדיין תבניות — צרו אחת כדי להתחיל.",
     markActiveTitle: "סמנו תבנית זו כפעילה",
