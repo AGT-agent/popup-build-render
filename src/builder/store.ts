@@ -1,6 +1,12 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { makeExamplePopup, makePopup, type PopupModal } from '@schema';
+import {
+  makeExamplePopup,
+  makePopup,
+  type DefaultText,
+  type PopupDirection,
+  type PopupModal,
+} from '@schema';
 
 export interface BuilderState {
   /** The saved popups — the array you pull out to send as JSON to the renderer. */
@@ -23,7 +29,12 @@ export interface BuilderState {
   clearActive: () => void;
   /** Toggle single-vs-array export. Turning it on trims Active down to one. */
   setSingleMode: (on: boolean) => void;
-  createPopup: (fromExample?: boolean) => string;
+  /**
+   * Create a template. `text` seeds the starter copy in the author's language
+   * and `direction` its text direction; omitted (or for the example template,
+   * which is a fixed worked example) both fall back to the schema's defaults.
+   */
+  createPopup: (fromExample?: boolean, text?: DefaultText, direction?: PopupDirection) => string;
   updatePopup: (id: string, patch: Partial<PopupModal>) => void;
   /** Replace a popup wholesale (used by the raw-JSON editor and full-object edits). */
   replacePopup: (id: string, next: PopupModal) => void;
@@ -59,8 +70,8 @@ export const useBuilderStore = create<BuilderState>()(
           activeIds: on ? s.activeIds.slice(0, 1) : s.activeIds,
         })),
 
-      createPopup: (fromExample = false) => {
-        const popup = fromExample ? makeExamplePopup() : makePopup();
+      createPopup: (fromExample = false, text, direction) => {
+        const popup = fromExample ? makeExamplePopup() : makePopup(undefined, text, direction);
         set((s) => ({ popups: [...s.popups, popup], selectedId: popup.id }));
         return popup.id;
       },

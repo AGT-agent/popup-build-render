@@ -43,7 +43,7 @@ export function SettingsEditor({ popup, onChange }: Props) {
           <div className="field-row">
             <label>{t.settings.trigger}</label>
             <select value={popup.trigger.type} onChange={(e) => setTrigger(e.target.value as PopupTrigger['type'])}>
-              {TRIGGER_TYPES.map((t) => <option key={t} value={t}>{t}</option>)}
+              {TRIGGER_TYPES.map((tt) => <option key={tt} value={tt}>{t.enums.trigger[tt]}</option>)}
             </select>
           </div>
 
@@ -76,7 +76,7 @@ export function SettingsEditor({ popup, onChange }: Props) {
               value={popup.frequency ?? 'always'}
               onChange={(e) => onChange({ frequency: e.target.value as PopupFrequency })}
             >
-              {FREQUENCIES.map((f) => <option key={f} value={f}>{f}</option>)}
+              {FREQUENCIES.map((f) => <option key={f} value={f}>{t.enums.frequency[f]}</option>)}
             </select>
           </div>
           <div className="field-row inline" style={{ alignItems: 'center', marginTop: 22 }}>
@@ -104,11 +104,17 @@ export function SettingsEditor({ popup, onChange }: Props) {
       {/* --- Submission --- */}
       <div className="section">
         <h3>{t.settings.submissionHeading}</h3>
+        <div className="field-row">
+          <label>{t.settings.endpointUrl}</label>
+          {/* Textarea so long endpoints wrap and stay readable — newlines are
+              stripped since the value is still a single URL. */}
+          <textarea
+            rows={2}
+            value={popup.url}
+            onChange={(e) => onChange({ url: e.target.value.replace(/\n/g, '') })}
+          />
+        </div>
         <div className="field-grid">
-          <div className="field-row">
-            <label>{t.settings.endpointUrl}</label>
-            <input type="url" value={popup.url} onChange={(e) => onChange({ url: e.target.value })} />
-          </div>
           <div className="field-row">
             <label>{t.settings.method}</label>
             <select value={popup.method} onChange={(e) => onChange({ method: e.target.value as 'GET' | 'POST' })}>
@@ -124,7 +130,7 @@ export function SettingsEditor({ popup, onChange }: Props) {
             value={popup.onSuccess?.type ?? 'close'}
             onChange={(e) => onChange({ onSuccess: buildSuccess(e.target.value as SubmitSuccess['type'], popup.onSuccess) })}
           >
-            {SUCCESS_TYPES.map((t) => <option key={t} value={t}>{t}</option>)}
+            {SUCCESS_TYPES.map((s) => <option key={s} value={s}>{t.enums.success[s]}</option>)}
           </select>
         </div>
         <SuccessFields success={popup.onSuccess} onChange={(s) => onChange({ onSuccess: s })} />
@@ -157,19 +163,19 @@ export function DesignEditor({ popup, onChange }: Props) {
         <div className="field-row">
           <label>{t.settings.layout}</label>
           <select value={popup.design} onChange={(e) => onChange({ design: e.target.value as PopupDesign })}>
-            {DESIGNS.map((d) => <option key={d} value={d}>{d}</option>)}
+            {DESIGNS.map((d) => <option key={d} value={d}>{t.enums.design[d]}</option>)}
           </select>
         </div>
         <div className="field-row">
-          {/* Sets the popup's own text direction (renderer only) — English is
-              left-to-right, Hebrew right-to-left. Separate from the builder UI language. */}
-          <label>{t.settings.language}</label>
+          {/* Sets the popup's own text direction (renderer only). Separate from
+              the builder UI language. */}
+          <label>{t.settings.direction}</label>
           <select
             value={popup.direction ?? 'ltr'}
             onChange={(e) => onChange({ direction: e.target.value as PopupDirection })}
           >
-            <option value="ltr">{t.settings.langEnglish}</option>
-            <option value="rtl">{t.settings.langHebrew}</option>
+            <option value="ltr">{t.settings.dirLtr}</option>
+            <option value="rtl">{t.settings.dirRtl}</option>
           </select>
         </div>
         <div className="field-row">
@@ -268,10 +274,21 @@ function SuccessFields({ success, onChange }: { success?: SubmitSuccess; onChang
   }
   if (success.type === 'redirect') {
     return (
-      <div className="field-row">
-        <label>{t.settings.redirectUrl}</label>
-        <input type="url" value={success.url} onChange={(e) => onChange({ ...success, url: e.target.value })} />
-      </div>
+      <>
+        <div className="field-row">
+          <label>{t.settings.redirectUrl}</label>
+          <input type="url" value={success.url} onChange={(e) => onChange({ ...success, url: e.target.value })} />
+        </div>
+        <div className="field-row inline">
+          <input
+            id="redirect-new-tab"
+            type="checkbox"
+            checked={success.newTab === true}
+            onChange={(e) => onChange({ ...success, newTab: e.target.checked || undefined })}
+          />
+          <label htmlFor="redirect-new-tab" style={{ margin: 0 }}>{t.settings.redirectNewTab}</label>
+        </div>
+      </>
     );
   }
   // coupon

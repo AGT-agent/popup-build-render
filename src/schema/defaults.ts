@@ -1,4 +1,4 @@
-import type { ContentItem, ContentType, PopupModal } from './types';
+import type { ContentItem, ContentType, PopupDirection, PopupModal } from './types';
 
 // Deterministic id generator. Kept dependency-free; unique enough for authoring.
 let counter = 0;
@@ -7,68 +7,115 @@ export function makeId(prefix = 'id'): string {
   return `${prefix}-${Date.now().toString(36)}-${counter}`;
 }
 
+/**
+ * Placeholder copy seeded into a brand-new popup or section. Passed in rather
+ * than hardcoded so the builder can seed in the author's language — the schema
+ * itself stays free of any i18n dependency, since the renderer shares it.
+ * Only prose lives here: submit keys and option values are URL-safe tokens and
+ * are never translated.
+ */
+export interface DefaultText {
+  popupName: string;
+  heading: string;
+  text: string;
+  emailLabel: string;
+  freeTextLabel: string;
+  checkboxLabel: string;
+  radioLabel: string;
+  optionA: string;
+  optionB: string;
+  submit: string;
+}
+
+/** English seeds — used whenever a caller doesn't supply its own. */
+export const DEFAULT_TEXT: DefaultText = {
+  popupName: 'Untitled popup',
+  heading: 'Heading',
+  text: 'Some descriptive text.',
+  emailLabel: 'Your email',
+  freeTextLabel: 'Your answer',
+  checkboxLabel: 'I agree',
+  radioLabel: 'Pick one',
+  optionA: 'Option A',
+  optionB: 'Option B',
+  submit: 'Submit',
+};
+
 /** A blank content item of the given type, with the fields that type needs. */
-export function makeContentItem(type: ContentType, order: number): ContentItem {
+export function makeContentItem(
+  type: ContentType,
+  order: number,
+  text: DefaultText = DEFAULT_TEXT,
+): ContentItem {
   const base: ContentItem = { id: makeId(type), order, type };
 
   switch (type) {
     case 'heading':
-      return { ...base, value: 'Heading', styleProps: { align: 'center' } };
+      return { ...base, value: text.heading, styleProps: { align: 'center' } };
     case 'text':
-      return { ...base, value: 'Some descriptive text.', styleProps: { align: 'center' } };
+      return { ...base, value: text.text, styleProps: { align: 'center' } };
     case 'spacer':
       return { ...base, height: 16 };
     case 'email':
       return {
         ...base,
-        value: 'Your email',
+        value: text.emailLabel,
         required: true,
         onSubmitRequest: { target: 'body', key: 'email' },
       };
     case 'free-text-input':
       return {
         ...base,
-        value: 'Your answer',
+        value: text.freeTextLabel,
         onSubmitRequest: { target: 'body', key: 'field' },
       };
     case 'checkbox':
       return {
         ...base,
-        value: 'I agree',
+        value: text.checkboxLabel,
         onSubmitRequest: { target: 'body', key: 'optIn' },
       };
     case 'radio':
       return {
         ...base,
-        value: 'Pick one',
+        value: text.radioLabel,
         options: [
-          { label: 'Option A', value: 'a' },
-          { label: 'Option B', value: 'b' },
+          { label: text.optionA, value: 'a' },
+          { label: text.optionB, value: 'b' },
         ],
         onSubmitRequest: { target: 'body', key: 'choice' },
       };
     case 'submit-button':
-      return { ...base, value: 'Submit' };
+      return { ...base, value: text.submit };
     default:
       return base;
   }
 }
 
-/** A new, empty popup with sensible defaults. */
-export function makePopup(name = 'Untitled popup'): PopupModal {
+/**
+ * A new, empty popup with sensible defaults. `direction` seeds the popup's own
+ * text direction — omit it to leave the key off the JSON entirely, which the
+ * renderer reads as `ltr`.
+ */
+export function makePopup(
+  name?: string,
+  text: DefaultText = DEFAULT_TEXT,
+  direction?: PopupDirection,
+): PopupModal {
   return {
     id: makeId('popup'),
-    name,
+    name: name ?? text.popupName,
     url: 'https://example.com/api/subscribe',
     method: 'POST',
     trigger: { type: 'immediate' },
     design: 'basic',
+    ...(direction ? { direction } : {}),
     dismissible: true,
     frequency: 'always',
     contentItems: [
-      makeContentItem('heading', 0),
-      makeContentItem('email', 1),
-      makeContentItem('submit-button', 2),
+      makeContentItem('heading', 0, text),
+      makeContentItem('email', 1, text),
+      makeContentItem('submit-button', 2, text),
     ],
   };
 }

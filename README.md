@@ -91,7 +91,9 @@ import { PopupBuilder } from 'popup-build-render/builder';
 
 ### Language
 
-The builder UI ships with English (`en`, default) and Hebrew (`he`). Pass `lang` to switch; `he` also flips the chrome to right-to-left. This affects only the builder's own interface, not the popup content the host edits.
+The builder UI ships with English (`en`, default) and Hebrew (`he`). Pass `lang` to switch; `he` also flips the chrome to right-to-left. This affects the builder's own interface — labels, dropdown options, buttons — plus the starter copy seeded into a new template or section ("Heading", "Your email", "Submit"…). Content you have already authored is never touched by a language change.
+
+The popup's own text direction is a separate, per-template setting — **Popup direction** (`LTR` / `RTL`) in the design section, stored on the popup as `direction`. A Hebrew popup can be authored from the English builder, and vice versa.
 
 ```tsx
 <PopupBuilder lang="he" />

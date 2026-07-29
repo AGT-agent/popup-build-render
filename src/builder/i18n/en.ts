@@ -1,7 +1,9 @@
 // English strings for the builder chrome. `he.ts` mirrors this shape exactly —
 // `Strings` is derived from this file, so adding a key here makes TypeScript
-// require it there too. Schema enum values (trigger types, designs, content
-// types) are shown raw and are intentionally not translated.
+// require it there too. Dropdown labels for the schema enums live under
+// `enums` below; the values stored in the JSON are always the raw keys, never
+// the translated label. HTTP methods and LTR/RTL stay untranslated — they are
+// protocol tokens, not prose.
 //
 // Note: no `as const`. That keeps `typeof en` widened to `string`, so Hebrew
 // values in `he.ts` remain assignable to `Strings`.
@@ -46,6 +48,7 @@ export const en = {
     endpointUrl: "Endpoint URL",
     method: "Method",
     onSuccess: "On success",
+    redirectNewTab: "In new tab",
     onErrorMessage: "On error message",
     onErrorPlaceholder: "Something went wrong — please try again.",
     customSubmitValues: "Custom submit callback values",
@@ -54,9 +57,9 @@ export const en = {
     addValue: "+ value",
     designHeading: "Design",
     layout: "Layout",
-    language: "Popup language",
-    langEnglish: "English",
-    langHebrew: "Hebrew",
+    direction: "Popup direction",
+    dirLtr: "LTR",
+    dirRtl: "RTL",
     borderRadius: "Border radius (px)",
     imageUrl: "Image URL",
     successMessage: "Success message",
@@ -103,6 +106,71 @@ export const en = {
     replay: "↻ Replay",
     disclaimer:
       "Preview ignores the trigger and frequency cap and never submits to a real endpoint.",
+  },
+  // Seed copy for a new template or section. Shape must satisfy the schema's
+  // `DefaultText` — this object is handed straight to the factories, so a
+  // missing key is a compile error at the call site.
+  defaults: {
+    popupName: "Untitled popup",
+    heading: "Heading",
+    text: "Some descriptive text.",
+    emailLabel: "Your email",
+    freeTextLabel: "Your answer",
+    checkboxLabel: "I agree",
+    radioLabel: "Pick one",
+    optionA: "Option A",
+    optionB: "Option B",
+    submit: "Submit",
+  },
+  // Dropdown option labels for the schema enums. Keys are the literal values
+  // stored in the JSON and must cover each union exactly — call sites index
+  // these by the union type, so a new schema value fails to compile until it
+  // is listed here (and, by `Strings`, translated in every language file).
+  // English deliberately echoes the raw stored value; only `redirect` differs,
+  // to spell out that the popup closes after handing off the redirect.
+  enums: {
+    trigger: {
+      immediate: "immediate",
+      delay: "delay",
+      scroll: "scroll",
+    },
+    frequency: {
+      always: "always",
+      session: "session",
+      day: "day",
+      ever: "ever",
+    },
+    design: {
+      basic: "basic",
+      "image-behind": "image-behind",
+      "image-right": "image-right",
+      "image-left": "image-left",
+    },
+    success: {
+      close: "close",
+      message: "message",
+      coupon: "coupon",
+      redirect: "Redirect and close",
+    },
+    align: {
+      left: "left",
+      center: "center",
+      right: "right",
+    },
+    target: {
+      body: "body",
+      query: "query param",
+    },
+    contentType: {
+      heading: "heading",
+      text: "text",
+      spacer: "spacer",
+      email: "email",
+      radio: "radio",
+      checkbox: "checkbox",
+      "free-text-input": "free-text-input",
+      "submit-button": "submit-button",
+    },
   },
 };
 

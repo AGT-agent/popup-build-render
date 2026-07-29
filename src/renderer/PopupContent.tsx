@@ -69,10 +69,14 @@ export function PopupContent({ popup, onClose, fetchImpl, preview }: PopupConten
       return;
     }
     if (success.type === 'redirect') {
-      if (!preview) {
-        if (success.newTab) window.open(success.url, '_blank');
-        else window.location.assign(success.url);
+      // New tab: this page stays put, so hand off the tab and close the popup.
+      // Same tab: navigation replaces the page; show "Redirecting…" until it does.
+      if (success.newTab) {
+        if (!preview) window.open(success.url, '_blank');
+        onClose?.();
+        return;
       }
+      if (!preview) window.location.assign(success.url);
       setPhase({ kind: 'success', outcome });
       return;
     }

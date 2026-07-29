@@ -1,9 +1,10 @@
 import { useBuilderStore } from '../store';
-import { useT } from '../i18n';
+import { isRtl, useLang, useT } from '../i18n';
 import { JsonPane } from './JsonPane';
 
 export function SavingView() {
   const t = useT();
+  const lang = useLang();
   const popups = useBuilderStore((s) => s.popups);
   const select = useBuilderStore((s) => s.select);
   const activeIds = useBuilderStore((s) => s.activeIds);
@@ -22,7 +23,14 @@ export function SavingView() {
         <div className="head">
           <h1>{t.app.title}</h1>
           <div className="btn-row">
-            <button className="primary" onClick={() => createPopup(false)}>{t.app.newPopup}</button>
+            {/* Seed the starter copy — and its direction — from the builder's
+                own language, so a Hebrew author starts RTL. */}
+            <button
+              className="primary"
+              onClick={() => createPopup(false, t.defaults, isRtl(lang) ? 'rtl' : undefined)}
+            >
+              {t.app.newPopup}
+            </button>
             <button onClick={() => createPopup(true)}>{t.app.example}</button>
           </div>
         </div>

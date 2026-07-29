@@ -31,7 +31,7 @@ export function ContentItemsEditor({ popup, onChange }: Props) {
   };
 
   const addItem = (type: ContentType) => {
-    commit([...items, makeContentItem(type, items.length)]);
+    commit([...items, makeContentItem(type, items.length, t.defaults)]);
   };
 
   const updateItem = (id: string, patch: Partial<ContentItem>) => {
@@ -79,15 +79,15 @@ function AddSectionButton({ onAdd }: { onAdd: (type: ContentType) => void }) {
       {open && (
         <div className="add-menu-popover">
           {/* Submit button is mandatory and always present — not addable. */}
-          {CONTENT_TYPES.filter((t) => t !== 'submit-button').map((t) => (
+          {CONTENT_TYPES.filter((ct) => ct !== 'submit-button').map((ct) => (
             <button
-              key={t}
+              key={ct}
               onClick={() => {
-                onAdd(t);
+                onAdd(ct);
                 setOpen(false);
               }}
             >
-              {t}
+              {t.enums.contentType[ct]}
             </button>
           ))}
         </div>
@@ -115,7 +115,8 @@ function ItemCard({ item, index, count, onMove, onRemove, onUpdate }: ItemCardPr
   return (
     <div className="item-card">
       <div className="item-head">
-        <span className="item-type">{item.type}</span>
+        {/* Same vocabulary as the add-section menu — both must speak one language. */}
+        <span className="item-type">{t.enums.contentType[item.type]}</span>
         <div className="item-order-btns">
           {item.type !== 'submit-button' && (
             <>
@@ -163,40 +164,39 @@ function ItemCard({ item, index, count, onMove, onRemove, onUpdate }: ItemCardPr
       )}
 
       {/* Align applies to every text-bearing section; color/background stay
-          scoped to the types that actually render them. Spacer has no text. */}
+          scoped to the types that actually render them. Spacer has no text, and
+          the submit button is a full-width block — aligning its label reads as
+          a no-op next to the button's own centering. */}
       {item.type !== 'spacer' && (
         <div className="field-grid">
-          <div className="field-row">
-            <label>{t.content.align}</label>
-            <select
-              value={item.styleProps?.align ?? 'center'}
-              onChange={(e) => onUpdate(item.id, { styleProps: { ...item.styleProps, align: e.target.value as 'left' | 'center' | 'right' } })}
-            >
-              <option value="left">left</option>
-              <option value="center">center</option>
-              <option value="right">right</option>
-            </select>
-          </div>
-          {(item.type === 'heading' || item.type === 'text' || item.type === 'submit-button') && (
+          {item.type !== 'submit-button' && (
             <div className="field-row">
-              <label>{t.content.color}</label>
-              <input
-                type="text"
-                placeholder="#111827"
-                value={item.styleProps?.color ?? ''}
-                onChange={(e) => onUpdate(item.id, { styleProps: { ...item.styleProps, color: e.target.value || undefined } })}
-              />
+              <label>{t.content.align}</label>
+              <select
+                value={item.styleProps?.align ?? 'center'}
+                onChange={(e) => onUpdate(item.id, { styleProps: { ...item.styleProps, align: e.target.value as 'left' | 'center' | 'right' } })}
+              >
+                <option value="left">{t.enums.align.left}</option>
+                <option value="center">{t.enums.align.center}</option>
+                <option value="right">{t.enums.align.right}</option>
+              </select>
             </div>
           )}
+          {(item.type === 'heading' || item.type === 'text' || item.type === 'submit-button') && (
+            <ColorField
+              label={t.content.color}
+              value={item.styleProps?.color}
+              fallback={item.type === 'submit-button' ? '#ffffff' : '#111827'}
+              onChange={(color) => onUpdate(item.id, { styleProps: { ...item.styleProps, color } })}
+            />
+          )}
           {item.type === 'submit-button' && (
-            <div className="field-row">
-              <label>{t.content.backgroundColor}</label>
-              <input
-                type="text"
-                value={item.styleProps?.backgroundColor ?? ''}
-                onChange={(e) => onUpdate(item.id, { styleProps: { ...item.styleProps, backgroundColor: e.target.value || undefined } })}
-              />
-            </div>
+            <ColorField
+              label={t.content.backgroundColor}
+              value={item.styleProps?.backgroundColor}
+              fallback="#111827"
+              onChange={(backgroundColor) => onUpdate(item.id, { styleProps: { ...item.styleProps, backgroundColor } })}
+            />
           )}
         </div>
       )}
@@ -221,8 +221,8 @@ function ItemCard({ item, index, count, onMove, onRemove, onUpdate }: ItemCardPr
                 value={item.onSubmitRequest?.target ?? 'body'}
                 onChange={(e) => onUpdate(item.id, { onSubmitRequest: { ...item.onSubmitRequest, target: e.target.value as RequestTarget } })}
               >
-                <option value="body">body</option>
-                <option value="query">query</option>
+                <option value="body">{t.enums.target.body}</option>
+                <option value="query">{t.enums.target.query}</option>
               </select>
             </div>
             <div className="field-row">
@@ -280,6 +280,53 @@ function RadioOptions({ item, onUpdate }: { item: ContentItem; onUpdate: ItemCar
       <button className="ghost" onClick={() => set([...options, { label: `Option ${options.length + 1}`, value: `opt${options.length + 1}` }])}>
         {t.content.addOption}
       </button>
+    </div>
+  );
+}
+
+/** `#abc` → `#aabbcc`; anything the native picker can't take returns undefined. */
+function toPickerHex(value?: string): string | undefined {
+  if (!value) return undefined;
+  const v = value.trim();
+  if (/^#[0-9a-f]{6}$/i.test(v)) return v.toLowerCase();
+  if (/^#[0-9a-f]{3}$/i.test(v)) return `#${v[1]}${v[1]}${v[2]}${v[2]}${v[3]}${v[3]}`.toLowerCase();
+  return undefined;
+}
+
+/**
+ * Swatch + text pair. The text box stays authoritative so named colors
+ * (`red`) and `rgb()` values survive — the picker only ever writes `#rrggbb`,
+ * and shows `fallback` (the renderer's default) while the field is empty.
+ * Clearing the text drops the key so the popup falls back to its own styling.
+ */
+function ColorField({
+  label,
+  value,
+  fallback,
+  onChange,
+}: {
+  label: string;
+  value?: string;
+  fallback: string;
+  onChange: (color: string | undefined) => void;
+}) {
+  return (
+    <div className="field-row">
+      <label>{label}</label>
+      <div className="color-field">
+        <input
+          type="color"
+          aria-label={label}
+          value={toPickerHex(value) ?? fallback}
+          onChange={(e) => onChange(e.target.value)}
+        />
+        <input
+          type="text"
+          placeholder={fallback}
+          value={value ?? ''}
+          onChange={(e) => onChange(e.target.value || undefined)}
+        />
+      </div>
     </div>
   );
 }

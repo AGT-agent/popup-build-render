@@ -265,7 +265,7 @@ type SubmitSuccess =
       type: "redirect"; // navigate the shopper somewhere
       url: string;
       newTab?: boolean;
-    };
+    }; // opens in a new tab and closes the popup; otherwise navigates this page
 
 type SubmitError = { type: "message"; text: string }; // show an error, keep the form open to retry (default)
 ```
