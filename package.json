@@ -44,6 +44,8 @@
     "preversion": "npm run typecheck && npm run build:lib",
     "postversion": "git push --follow-tags",
     "release:rc": "npm version prerelease --preid=rc",
+    "release:rc:minor": "npm version preminor --preid=rc",
+    "release:rc:major": "npm version premajor --preid=rc",
     "release:patch": "npm version patch",
     "release:minor": "npm version minor",
     "release:major": "npm version major"

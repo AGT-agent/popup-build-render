@@ -62,9 +62,18 @@ Note: npm records the *resolved commit* in `package-lock.json`, so a later bare 
 
 **3. Release candidate** — an immutable tag, for wider testing or a staging deploy.
 
+Start the series with the bump the finished release will need — `release:rc` alone bumps the patch, which understates a branch full of new features:
+
 ```bash
-npm run release:rc     # 0.1.0 → 0.1.1-rc.0, tags v0.1.1-rc.0, pushes
-npm run release:rc     # → 0.1.1-rc.1, and so on
+npm run release:rc:minor   # 0.1.0 → 0.2.0-rc.0   branch adds features
+npm run release:rc:major   # 0.1.0 → 1.0.0-rc.0   branch has breaking changes
+npm run release:rc         # 0.1.0 → 0.1.1-rc.0   branch is bug fixes only
+```
+
+Once a series is open, plain `release:rc` continues it — `0.2.0-rc.0` → `0.2.0-rc.1` → and so on:
+
+```bash
+npm run release:rc
 ```
 
 ```bash
