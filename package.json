@@ -1,6 +1,6 @@
 {
   "name": "popup-build-render",
-  "version": "0.3.0-rc.0",
+  "version": "0.4.0-rc.0",
   "type": "module",
   "description": "A JSON-driven popup modal renderer and a visual builder for authoring the JSON.",
   "repository": {
