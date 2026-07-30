@@ -318,6 +318,26 @@ several different pages or markup variants:
 
 Only existence is checked, so multiple matches are fine and equivalent to one.
 
+**Generated tags.** Gating on the merchant's existing markup assumes they know
+which class or id identifies a page. For those who don't, the builder's
+*Generate tag* button derives a selector from the popup name:
+
+```json
+{ "selector": "[data-popup=\"summer-sale\"]" }
+```
+
+and shows the element to paste onto each page it should show on:
+
+```html
+<div data-popup="summer-sale"></div>
+```
+
+The attribute is `data-*` so the pasted markup stays valid HTML. Nothing in the
+renderer treats a generated tag specially — it is an ordinary attribute selector,
+so it can sit in a selector list alongside hand-written entries. Regenerating
+after a rename replaces the tag in place rather than appending a second one,
+which invalidates markup already pasted under the old value.
+
 **Late-rendered markup.** The check isn't one-shot: if nothing matches at mount
 time, a `MutationObserver` watches the document for up to 10s and renders as soon
 as a match appears. This covers hydration, drawers that open on click, and SPA

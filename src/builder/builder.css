@@ -361,6 +361,21 @@ input[type="color"]::-moz-color-swatch {
   border-radius: 5px;
 }
 
+/* Selector input + its "generate tag" button share one row. */
+.selector-field {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.selector-field input[type="text"] {
+  flex: 1;
+  min-width: 0;
+}
+.selector-field button {
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+
 .field-error {
   display: block;
   font-size: 11px;
@@ -374,6 +389,27 @@ input[type="color"]::-moz-color-swatch {
   color: var(--muted);
   margin-top: 4px;
   line-height: 1.4;
+}
+/* The paste-me-into-your-page snippet under the selector field. Must stay
+   after .field-hint — same specificity, and it overrides `display`. */
+.tag-hint {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.tag-hint code {
+  font-family: ui-monospace, monospace;
+  background: var(--input-bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 2px 6px;
+  color: var(--text);
+  overflow-wrap: anywhere;
+}
+.tag-hint button {
+  padding: 2px 6px;
+  font-size: 11px;
 }
 input.invalid,
 input.invalid:focus {

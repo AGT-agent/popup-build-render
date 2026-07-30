@@ -152,6 +152,62 @@ export function isUrlSafeToken(value: string): boolean {
 
 export const URL_TOKEN_HINT = 'No spaces or special characters — use letters, digits, . _ ~ -';
 
+// ---------------------------------------------------------------------------
+// Generated page tag — the "no CSS knowledge required" path to a `selector`.
+//
+// Instead of hunting for an existing class or id to gate on, a merchant can
+// generate a tag here and paste the matching element onto every page the popup
+// belongs on. A `data-*` attribute keeps that pasted markup valid HTML — a bare
+// `popup-selector="…"` would still match in `querySelector`, but it is not a
+// legal attribute name per the HTML spec.
+// ---------------------------------------------------------------------------
+
+export const POPUP_TAG_ATTR = 'data-popup';
+
+/** Matches a generated tag inside a (possibly longer) selector list. */
+export const POPUP_TAG_RE = new RegExp(`\\[${POPUP_TAG_ATTR}=["']?([^"'\\]]+)["']?\\]`);
+
+/**
+ * Turns a popup name into an attribute value: lowercased, runs of anything that
+ * isn't a letter or digit collapsed to `-`. Letters stay Unicode-aware so a
+ * Hebrew name yields a readable Hebrew tag rather than an empty one. Falls back
+ * to `fallback` (the popup id) when the name has nothing usable in it.
+ */
+export function popupTagValue(name: string, fallback: string): string {
+  const slug = name
+    .toLowerCase()
+    .replace(/[^\p{L}\p{N}]+/gu, '-')
+    .replace(/^-+|-+$/g, '');
+  return slug || fallback;
+}
+
+/** The selector stored in `selector` for a generated tag. */
+export function popupTagSelector(value: string): string {
+  return `[${POPUP_TAG_ATTR}="${value}"]`;
+}
+
+/** The markup the merchant pastes onto every page the popup should show on. */
+export function popupTagSnippet(value: string): string {
+  return `<div ${POPUP_TAG_ATTR}="${value}"></div>`;
+}
+
+/** The tag value already present in a selector, if any. */
+export function readPopupTag(selector?: string): string | undefined {
+  return selector?.match(POPUP_TAG_RE)?.[1];
+}
+
+/**
+ * Puts `tag` into an existing selector: replacing a tag that's already there
+ * (so a regenerate after a rename swaps rather than duplicates), otherwise
+ * appending to the selector list so hand-written entries survive.
+ */
+export function withPopupTag(selector: string | undefined, tag: string): string {
+  const current = (selector ?? '').trim();
+  if (!current) return tag;
+  if (POPUP_TAG_RE.test(current)) return current.replace(POPUP_TAG_RE, () => tag);
+  return `${current}, ${tag}`;
+}
+
 /** Designs that consume the top-level `imageUrl`. */
 export function designUsesImage(design: PopupDesign): boolean {
   return design !== 'basic';

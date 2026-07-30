@@ -1,9 +1,15 @@
+import { useState } from 'react';
 import {
   DESIGNS,
   FREQUENCIES,
   URL_TOKEN_HINT,
   designUsesImage,
   isUrlSafeToken,
+  popupTagSelector,
+  popupTagSnippet,
+  popupTagValue,
+  readPopupTag,
+  withPopupTag,
   type CallbackPayloadEntry,
   type PopupDesign,
   type PopupDirection,
@@ -90,15 +96,7 @@ export function SettingsEditor({ popup, onChange }: Props) {
           </div>
         </div>
 
-        <div className="field-row">
-          <label>{t.settings.selectorLabel}</label>
-          <input
-            type="text"
-            value={popup.selector ?? ''}
-            placeholder={t.settings.selectorPlaceholder}
-            onChange={(e) => onChange({ selector: e.target.value || undefined })}
-          />
-        </div>
+        <SelectorField popup={popup} onChange={onChange} />
       </div>
 
       {/* --- Submission --- */}
@@ -155,6 +153,59 @@ export function SettingsEditor({ popup, onChange }: Props) {
             this can be re-introduced later. */}
       </div>
     </>
+  );
+}
+
+/**
+ * The `selector` page gate, plus a one-click escape hatch for merchants who
+ * don't write CSS: "Generate tag" drops a `[data-popup="…"]` selector derived
+ * from the popup name into the field and shows the element to paste onto each
+ * page it should show on.
+ */
+function SelectorField({ popup, onChange }: Props) {
+  const t = useT();
+  const [copied, setCopied] = useState(false);
+
+  // Read the tag back out of the stored selector rather than re-deriving it
+  // from the name: renaming a popup must not silently invalidate markup the
+  // merchant already pasted. Pressing the button again is the explicit re-sync.
+  const activeTag = readPopupTag(popup.selector);
+  const snippet = activeTag ? popupTagSnippet(activeTag) : '';
+
+  const generate = () => {
+    const tag = popupTagSelector(popupTagValue(popup.name, popup.id));
+    onChange({ selector: withPopupTag(popup.selector, tag) });
+  };
+
+  const copy = () => {
+    navigator.clipboard?.writeText(snippet).catch(() => undefined);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 1200);
+  };
+
+  return (
+    <div className="field-row">
+      <label>{t.settings.selectorLabel}</label>
+      <div className="selector-field">
+        <input
+          type="text"
+          value={popup.selector ?? ''}
+          placeholder={t.settings.selectorPlaceholder}
+          onChange={(e) => onChange({ selector: e.target.value || undefined })}
+        />
+        <button className="ghost" title={t.settings.generateTagTitle} onClick={generate}>
+          {t.settings.generateTag}
+        </button>
+      </div>
+      {activeTag && (
+        <div className="field-hint tag-hint">
+          <span>{t.settings.tagHint}</span>
+          {/* Markup reads left-to-right even when the builder chrome is RTL. */}
+          <code dir="ltr">{snippet}</code>
+          <button className="ghost" onClick={copy}>{copied ? t.json.copied : t.json.copy}</button>
+        </div>
+      )}
+    </div>
   );
 }
 

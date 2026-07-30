@@ -42,8 +42,11 @@ export const en = {
     frequency: "Frequency",
     dismissible: "Dismissible (X / overlay / esc)",
     selectorLabel:
-      "CSS selector (only show on pages containing a matching element — leave blank to always show)",
+      "Selector (only show on pages containing a matching element — leave blank to always show)",
     selectorPlaceholder: "#product-page, .cart-drawer",
+    generateTag: "Generate tag",
+    generateTagTitle: "Fill the selector with a tag of this popup's own — no CSS needed",
+    tagHint: "Paste this into every page the popup should show on:",
     submissionHeading: "Submission",
     endpointUrl: "Endpoint URL",
     method: "Method",

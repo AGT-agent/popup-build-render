@@ -37,8 +37,11 @@ export const he: Strings = {
     frequency: "תדירות",
     dismissible: "ניתן לסגירה (X / רקע / esc)",
     selectorLabel:
-      "סלקטור CSS (הצג רק בדפים המכילים אלמנט מתאים — השאירו ריק להצגה תמיד)",
+      "סלקטור (הצג רק בדפים המכילים אלמנט מתאים — השאירו ריק להצגה תמיד)",
     selectorPlaceholder: "#product-page, .cart-drawer",
+    generateTag: "צור תגית",
+    generateTagTitle: "מילוי הסלקטור בתגית ייעודית לפופאפ הזה — ללא צורך בידע ב-CSS",
+    tagHint: "הדביקו את הקוד הזה בכל דף שבו הפופאפ אמור להופיע:",
     submissionHeading: "שליחה",
     endpointUrl: "כתובת Endpoint",
     method: "שיטה",
