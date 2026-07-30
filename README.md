@@ -17,15 +17,14 @@ npm run build:app  # typecheck + build the builder/demo pages into dist/
 The package ships as an ESM library. `react` and `react-dom` are peer dependencies — the host app provides them.
 
 ```bash
-# from GitHub (a branch, tag, or commit after #)
-npm i github:AGT-agent/popup-build-render
+# a released version (recommended — tags are immutable)
 npm i github:AGT-agent/popup-build-render#v0.1.0
+
+# the default branch, unpinned
+npm i github:AGT-agent/popup-build-render
 
 # from a local checkout, for development
 npm i ../popup-build-render     # symlinks; rebuild with `npm run build` after edits
-
-# from npm, once published
-npm i popup-build-render
 ```
 
 Installing from GitHub or a local path runs the `prepare` script, which builds `lib/` — so no build output needs to be committed.
@@ -39,6 +38,58 @@ import 'popup-build-render/builder.css';   // only needed with the builder
 ```
 
 If you install from a local path, add `resolve: { dedupe: ['react', 'react-dom'] }` to the consuming app's Vite config — a symlinked package otherwise resolves its own React copy and hooks break.
+
+## Testing unreleased changes
+
+Three ways to get in-progress work into a consuming app, from fastest to most faithful.
+
+**1. Local tarball** — exactly what a consumer would receive, no push required. Best for a final check before releasing.
+
+```bash
+npm pack                                                   # in this repo → popup-build-render-<version>.tgz
+npm i ../popup-build-render/popup-build-render-0.1.0.tgz   # in the consuming app
+```
+
+`npm pack` runs `prepare`, so the tarball always contains a fresh `lib/`. Use `npm run pack:check` to list the contents without writing a file.
+
+**2. Install straight from a branch** — for sharing work with someone else before it's released.
+
+```bash
+npm i github:AGT-agent/popup-build-render#feature/my-branch
+```
+
+Note: npm records the *resolved commit* in `package-lock.json`, so a later bare `npm i` will not pick up new commits pushed to that branch. Re-run the full command above to re-resolve the ref.
+
+**3. Release candidate** — an immutable tag, for wider testing or a staging deploy.
+
+```bash
+npm run release:rc     # 0.1.0 → 0.1.1-rc.0, tags v0.1.1-rc.0, pushes
+npm run release:rc     # → 0.1.1-rc.1, and so on
+```
+
+```bash
+npm i github:AGT-agent/popup-build-render#v0.1.1-rc.0   # in the consuming app
+```
+
+When the rc is good, `npm run release:patch` promotes `0.1.1-rc.N` to a clean `0.1.1`.
+
+## Releasing a version
+
+```bash
+npm run release:patch   # 0.1.0 → 0.1.1   bug fixes
+npm run release:minor   # 0.1.0 → 0.2.0   new features, backwards compatible
+npm run release:major   # 0.1.0 → 1.0.0   breaking changes
+```
+
+Each command bumps `version` in `package.json`, commits that change, creates a matching `v<version>` git tag, and pushes both to `origin`. A `preversion` hook runs `typecheck` and a full library build first — if either fails, nothing is committed, tagged, or pushed.
+
+Requirements: a clean working tree (`npm version` refuses to run otherwise) and the release should be cut from the branch you intend to ship, usually `master`.
+
+Consumers then pin the new tag:
+
+```bash
+npm i github:AGT-agent/popup-build-render#v0.1.1
+```
 
 ## Using the renderer
 
