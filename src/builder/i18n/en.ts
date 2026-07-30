@@ -41,9 +41,9 @@ export const en = {
     scrollPercent: "Scroll (%)",
     frequency: "Frequency",
     dismissible: "Dismissible (X / overlay / esc)",
-    htmlIdLabel:
-      "htmlId (only show on pages containing this element — leave blank to always show)",
-    htmlIdPlaceholder: "some-html-id",
+    selectorLabel:
+      "CSS selector (only show on pages containing a matching element — leave blank to always show)",
+    selectorPlaceholder: "#product-page, .cart-drawer",
     submissionHeading: "Submission",
     endpointUrl: "Endpoint URL",
     method: "Method",

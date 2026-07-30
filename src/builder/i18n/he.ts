@@ -36,9 +36,9 @@ export const he: Strings = {
     scrollPercent: "גלילה (%)",
     frequency: "תדירות",
     dismissible: "ניתן לסגירה (X / רקע / esc)",
-    htmlIdLabel:
-      "htmlId (הצג רק בדפים המכילים אלמנט זה — השאירו ריק להצגה תמיד)",
-    htmlIdPlaceholder: "some-html-id",
+    selectorLabel:
+      "סלקטור CSS (הצג רק בדפים המכילים אלמנט מתאים — השאירו ריק להצגה תמיד)",
+    selectorPlaceholder: "#product-page, .cart-drawer",
     submissionHeading: "שליחה",
     endpointUrl: "כתובת Endpoint",
     method: "שיטה",

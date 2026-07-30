@@ -48,7 +48,7 @@ Drive everything from a popup JSON (shape defined in [`POPUP-COMPONENT-JSON-SCHE
 import { mountPopup, PopupMount, PopupContent } from 'popup-build-render';
 ```
 
-- **`mountPopup(json)`** — for a storefront/plain page. Wires up the trigger, frequency cap, and placement (overlay, or inline if `htmlId` matches an element), then renders when appropriate. Returns `{ unmount() }`.
+- **`mountPopup(json)`** — for a storefront/plain page. Wires up the trigger, frequency cap, and the `selector` page gate, then renders a full-page overlay when appropriate. Returns `{ unmount() }`.
 - **`<PopupMount popup={json} />`** — the same mount behavior as a React component.
 - **`<PopupContent popup={json} />`** — just the drawing (design + fields + submit); no trigger/frequency logic. You control when it shows.
 

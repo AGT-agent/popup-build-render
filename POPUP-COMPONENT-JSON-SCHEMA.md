@@ -20,7 +20,7 @@ interface PopupModal {
   direction?: "ltr" | "rtl"; // text direction of the popup — default 'ltr'
   borderRadius?: number; // modal corner radius in px — default 14
   imageUrl?: string; // image source for the image-* designs
-  htmlId?: string; // merchant-side mount point (see §7)
+  selector?: string; // CSS selector gating which pages it shows on (see §7)
   dismissible?: boolean; // proposal: close button / overlay-click / esc — default true
   frequency?: PopupFrequency; // proposal: how often it may re-open — default 'always'
   onSuccess?: SubmitSuccess; // what the shopper sees after a successful submit (§6)
@@ -46,7 +46,7 @@ interface CallbackPayloadEntry {
 | `direction`    | `"ltr" \| "rtl"?` | Text direction of the rendered popup (e.g. `rtl` for Hebrew). Independent of the builder UI language. Default `ltr`.                                                            |
 | `borderRadius` | `number?`         | Corner radius of the modal card, in px. Default `14`.                                                                                                                           |
 | `imageUrl`     | `string?`         | Image URL used by `image-behind` / `image-right` / `image-left`. Ignored by `basic`.                                                                                            |
-| `htmlId`       | `string?`         | If set, the modal renders **inline** into the merchant element with this id (see [§7](#7-htmlid--merchant-controlled-placement)). If absent, it renders as a full-page overlay. |
+| `selector`     | `string?`         | CSS selector deciding **whether** the popup shows on a page, not where (see [§7](#7-selector--page-gating)). If absent, it shows on every page it's loaded on. Always a full-page overlay either way. |
 | `dismissible`  | `boolean?`        | **Proposal.** Whether the shopper can close it (X / overlay click / esc). Default `true`.                                                                                       |
 | `frequency`    | `PopupFrequency?` | **Proposal.** Re-open cap, enforced via `localStorage`. Default `'always'`.                                                                                                     |
 | `onSuccess`    | `SubmitSuccess?`  | Post-submit success behavior. See [§6](#after-submit--onsuccess--onerror). Default: close.                                                                                      |
@@ -295,10 +295,34 @@ Example success block for the welcome-15 popup above:
 
 ---
 
-## 7. `htmlId` — merchant-controlled placement
+## 7. `selector` — page gating
 
-- `htmlId` present → inline placement into that element.
-- `htmlId` absent → default full-page overlay.
+`selector` is a **condition, not a mount point**. The popup is always a full-page
+overlay appended to `<body>`; the matched element is never rendered into and is
+never modified. It only answers "does this popup belong on this page?".
+
+- `selector` absent → shows on every page the script is loaded on.
+- `selector` matches at least one element → shows.
+- `selector` matches nothing → does not show. No fallback to always-on.
+
+Any valid CSS selector works, including a selector list, so one popup can cover
+several different pages or markup variants:
+
+```json
+{ "selector": "#product-page, .cart-drawer, [data-collection='sale']" }
+```
+
+Only existence is checked, so multiple matches are fine and equivalent to one.
+
+**Late-rendered markup.** The check isn't one-shot: if nothing matches at mount
+time, a `MutationObserver` watches the document for up to 10s and renders as soon
+as a match appears. This covers hydration, drawers that open on click, and SPA
+route changes that swap in the target element after the embed script runs. After
+10s with no match, the watcher disconnects and the popup stays hidden for that
+pageview. `unmount()` disconnects it early.
+
+**Invalid selectors** are treated as "no match" (popup hidden) rather than
+throwing, so a typo can't break the merchant's page.
 
 ---
 

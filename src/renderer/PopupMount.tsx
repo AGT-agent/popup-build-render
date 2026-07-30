@@ -56,7 +56,7 @@ export function PopupMount({ popup, fetchImpl, preview, forceOpen, onClose }: Po
 
   const content = <PopupContent popup={popup} onClose={close} fetchImpl={fetchImpl} preview={preview} />;
 
-  // Always a full-page overlay modal. `htmlId` only gates whether the popup
+  // Always a full-page overlay modal. `selector` only gates whether the popup
   // mounts at all (handled in mountPopup); it does not change placement.
   return (
     <div

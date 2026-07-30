@@ -91,12 +91,12 @@ export function SettingsEditor({ popup, onChange }: Props) {
         </div>
 
         <div className="field-row">
-          <label>{t.settings.htmlIdLabel}</label>
+          <label>{t.settings.selectorLabel}</label>
           <input
             type="text"
-            value={popup.htmlId ?? ''}
-            placeholder={t.settings.htmlIdPlaceholder}
-            onChange={(e) => onChange({ htmlId: e.target.value || undefined })}
+            value={popup.selector ?? ''}
+            placeholder={t.settings.selectorPlaceholder}
+            onChange={(e) => onChange({ selector: e.target.value || undefined })}
           />
         </div>
       </div>

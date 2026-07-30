@@ -94,7 +94,12 @@ export interface PopupModal {
   direction?: PopupDirection;
   borderRadius?: number;
   imageUrl?: string;
-  htmlId?: string;
+  /**
+   * CSS selector gating *whether* the popup shows, not where. Renders only on
+   * pages where it matches something; omit to always show. Accepts a selector
+   * list (`.cart, #product`) to match any of several elements.
+   */
+  selector?: string;
   dismissible?: boolean;
   frequency?: PopupFrequency;
   onSuccess?: SubmitSuccess;
