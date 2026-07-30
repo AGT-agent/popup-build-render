@@ -106,13 +106,36 @@ export const useBuilderStore = create<BuilderState>()(
       importPopups: (incoming) =>
         set((s) => {
           const byId = new Map(s.popups.map((p) => [p.id, p]));
-          for (const p of incoming) byId.set(p.id, p);
+          for (const p of incoming) byId.set(p.id, dropLegacyTarget(p));
           return { popups: Array.from(byId.values()) };
         }),
     }),
-    { name: 'popup-builder-store' },
+    {
+      name: 'popup-builder-store',
+      version: 1,
+      // v1 retired the per-item `onSubmitRequest.target` — the popup's `method`
+      // now decides where values are sent. Strip the dead key so it stops
+      // showing up in exported JSON.
+      migrate: (state) => {
+        const s = state as BuilderState;
+        return { ...s, popups: (s.popups ?? []).map(dropLegacyTarget) };
+      },
+    },
   ),
 );
+
+/** Remove the pre-v1 `onSubmitRequest.target` key from a stored popup. */
+function dropLegacyTarget(popup: PopupModal): PopupModal {
+  let changed = false;
+  const contentItems = popup.contentItems?.map((item) => {
+    const req = item.onSubmitRequest as (typeof item.onSubmitRequest & { target?: unknown }) | undefined;
+    if (!req || !('target' in req)) return item;
+    changed = true;
+    const { target: _target, ...rest } = req;
+    return { ...item, onSubmitRequest: rest };
+  });
+  return changed ? { ...popup, contentItems: contentItems! } : popup;
+}
 
 /** Convenience selector: the current array of popup JSONs. */
 export function getAllPopups(): PopupModal[] {

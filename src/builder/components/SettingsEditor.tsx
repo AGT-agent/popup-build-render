@@ -121,6 +121,11 @@ export function SettingsEditor({ popup, onChange }: Props) {
               <option value="POST">POST</option>
               <option value="GET">GET</option>
             </select>
+            {/* The method alone decides where submitted values land — there is
+                no per-section query/body choice, so spell it out here. */}
+            <span className="field-hint">
+              {popup.method === 'GET' ? t.settings.methodHintGet : t.settings.methodHintPost}
+            </span>
           </div>
         </div>
 

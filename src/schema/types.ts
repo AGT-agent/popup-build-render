@@ -32,8 +32,6 @@ export type ContentType =
   | 'free-text-input'
   | 'submit-button';
 
-export type RequestTarget = 'query' | 'body';
-
 export interface StyleProps {
   align?: 'left' | 'center' | 'right';
   color?: string;
@@ -45,8 +43,13 @@ export interface PopupOption {
   value: string;
 }
 
+/**
+ * Marks an input as contributing to the submit request, under `key`. Where the
+ * value lands is decided by the popup's `method`, not per-item: `GET` sends
+ * everything on the query string, `POST` sends everything in both the query
+ * string and the JSON body.
+ */
 export interface OnSubmitRequest {
-  target: RequestTarget;
   key?: string;
 }
 
@@ -87,6 +90,10 @@ export interface PopupModal {
   id: string;
   name: string;
   url: string;
+  /**
+   * How submitted values reach `url`. `GET` puts everything on the query
+   * string; `POST` sends everything on the query string *and* in the JSON body.
+   */
   method: 'GET' | 'POST';
   trigger: PopupTrigger;
   design: PopupDesign;

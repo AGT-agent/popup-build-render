@@ -14,7 +14,7 @@ interface PopupModal {
   id: string; // unique id of this modal component
   name: string; // human label for the merchant (list view, not rendered)
   url: string; // merchant API endpoint hit on submit
-  method: "GET" | "POST"; // request type to the merchant API
+  method: "GET" | "POST"; // GET = query params only; POST = query params + JSON body
   trigger: PopupTrigger; // when the modal opens
   design: PopupDesign; // layout template
   direction?: "ltr" | "rtl"; // text direction of the popup — default 'ltr'
@@ -40,7 +40,7 @@ interface CallbackPayloadEntry {
 | `id`           | `string`          | Stable unique id for the modal.                                                                                                                                                 |
 | `name`         | `string`          | Internal name; shown in the Dashboard list, never rendered in the popup.                                                                                                        |
 | `url`          | `string`          | The merchant's endpoint the form submits to.                                                                                                                                    |
-| `method`       | `'GET' \| 'POST'` | How the submit request is sent (see [§6 Submit assembly](#6-how-a-submit-is-assembled)).                                                                                        |
+| `method`       | `'GET' \| 'POST'` | Where submitted values go: `GET` = query params only, `POST` = query params **and** JSON body (see [§6 Submit assembly](#6-how-a-submit-is-assembled)).                          |
 | `trigger`      | `PopupTrigger`    | See [§2](#2-popuptrigger).                                                                                                                                                      |
 | `design`       | `PopupDesign`     | See [§3](#3-popupdesign).                                                                                                                                                       |
 | `direction`    | `"ltr" \| "rtl"?` | Text direction of the rendered popup (e.g. `rtl` for Hebrew). Independent of the builder UI language. Default `ltr`.                                                            |
@@ -158,16 +158,18 @@ Which fields are meaningful per type:
 
 ## 6. How a submit is assembled
 
-Each input item declares, via `onSubmitRequest`, whether it contributes to the **URL query string** or the **body** of the request to `url`, and under what key. The **value is always resolved at submit time** from the item's `type` — that's why there's no static value here.
+An input item declares, via `onSubmitRequest`, that it contributes to the request to `url` and under what key. **Where** the value lands is decided by the popup's top-level `method` — not per item. The **value is always resolved at submit time** from the item's `type` — that's why there's no static value here.
 
 ```ts
-type RequestTarget = "query" | "body";
-
 interface OnSubmitRequest {
-  target: RequestTarget; // query vs body — default 'body'
   key?: string; // query param name / body key. Defaults to 'email' for the email item; required otherwise.
 }
 ```
+
+| `method` | Where every submitted value goes                             |
+| -------- | ------------------------------------------------------------ |
+| `GET`    | URL query string only.                                        |
+| `POST`   | URL query string **and** the JSON body — the endpoint reads whichever it prefers. |
 
 > **Key format.** Every submit key — `onSubmitRequest.key`, `radio` option `value`s, and
 > `onSubmitCallbackPayload` keys — is used verbatim as a URL query/body key, so it must be
@@ -185,10 +187,10 @@ interface OnSubmitRequest {
 
 **Assembly at submit time:**
 
-- `query` items → appended to the request URL's query string as `key=value`.
-- `body` items → merged into the request body as `{ key: value }`.
-- `onSubmitCallbackPayload` entries → merged into the request body as static `{ key: value }` pairs (query string for `GET`), alongside the resolved input values. These are fixed values the merchant sets in the builder, not tied to any input.
-- For `GET`, "body" params instead go on the query string (TBD — see [§8](#8-open-questions)).
+- Every input with an `onSubmitRequest` → appended to the request URL's query string as `key=value`, and — for `POST` only — also merged into the JSON body as `{ key: value }`.
+- `onSubmitCallbackPayload` entries → the same treatment, as static `{ key: value }` pairs alongside the resolved input values. These are fixed values the merchant sets in the builder, not tied to any input.
+- The body keeps native types (a `checkbox` stays a JSON `true`/`false`); the query string necessarily stringifies everything.
+- `POST` requests send `Content-Type: application/json`. `GET` requests carry no body.
 
 ### Example
 
@@ -217,14 +219,14 @@ interface OnSubmitRequest {
       "type": "email",
       "value": "Your email",
       "required": true,
-      "onSubmitRequest": { "target": "body", "key": "email" },
+      "onSubmitRequest": { "key": "email" },
     },
     {
       "id": "c1",
       "order": 2,
       "type": "checkbox",
       "value": "Email me deals",
-      "onSubmitRequest": { "target": "body", "key": "marketingOptIn" },
+      "onSubmitRequest": { "key": "marketingOptIn" },
     },
     {
       "id": "btn",
@@ -236,11 +238,13 @@ interface OnSubmitRequest {
 }
 ```
 
-Resulting `POST https://shop.example.com/api/subscribe` body:
+Resulting request — `POST https://shop.example.com/api/subscribe?email=shopper%40example.com&marketingOptIn=true`, with the same values in the body:
 
 ```json
 { "email": "shopper@example.com", "marketingOptIn": true }
 ```
+
+The same popup with `"method": "GET"` would send only the query string, no body.
 
 ### After submit — `onSuccess` / `onError`
 
@@ -347,9 +351,8 @@ type PopupFrequency = "session" | "day" | "ever" | "always";
 ## 10. Open questions
 
 1. **Success detection** — is 2xx HTTP status enough to treat a submit as successful, or do we also inspect the response body for a merchant-signalled failure (e.g. `{ ok: false }`)? Affects when `onSuccess` vs `onError` fires.
-2. **`GET` requests** — for `method: 'GET'`, do `body`-targeted params become query-string params, or is `body` disallowed for GET?
-3. **Localization** — spec `POPUP-BUILDER-SPEC.md` (D5) proposes localized strings. Keep `value` / `onSuccess.text` a plain string for v0, or already `{ he, en, … }`?
-4. **Multiple inputs of the same type** — e.g. two free-text inputs; `key` uniqueness is on the merchant/builder to enforce. Any validation needed?
+2. **Localization** — spec `POPUP-BUILDER-SPEC.md` (D5) proposes localized strings. Keep `value` / `onSuccess.text` a plain string for v0, or already `{ he, en, … }`?
+3. **Multiple inputs of the same type** — e.g. two free-text inputs; `key` uniqueness is on the merchant/builder to enforce. Any validation needed?
 
 ```
 

@@ -42,6 +42,8 @@ export const he: Strings = {
     submissionHeading: "שליחה",
     endpointUrl: "כתובת Endpoint",
     method: "שיטה",
+    methodHintGet: "כל הערכים נשלחים כפרמטרים בכתובת (query params).",
+    methodHintPost: "כל הערכים נשלחים גם כפרמטרים בכתובת (query params) וגם בגוף הבקשה (JSON body).",
     onSuccess: "בשליחת טופס מוצלחת",
     redirectNewTab: "בכרטיסייה חדשה",
     onErrorMessage: "הודעת שגיאה",
@@ -81,7 +83,6 @@ export const he: Strings = {
     color: "צבע",
     backgroundColor: "צבע רקע",
     required: "חובה",
-    submitTarget: "יעד שליחה",
     submitKey: "פרמטר",
     options: "אפשרויות",
     optionLabel: "תווית",
@@ -142,10 +143,6 @@ export const he: Strings = {
       left: "שמאל",
       center: "מרכז",
       right: "ימין",
-    },
-    target: {
-      body: "body",
-      query: "query param",
     },
     contentType: {
       heading: "כותרת",

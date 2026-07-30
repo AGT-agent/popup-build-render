@@ -47,31 +47,36 @@ export interface AssembledRequest {
   body?: string;
 }
 
-/** Build the outgoing request from the popup's input items and current values. */
+/**
+ * Build the outgoing request from the popup's input items and current values.
+ *
+ * The popup's `method` alone decides where values land — there is no per-item
+ * choice. `GET` sends everything on the query string; `POST` sends everything
+ * on the query string *and* in the JSON body, so an endpoint can read whichever
+ * it prefers.
+ */
 export function assembleRequest(popup: PopupModal, values: FormValues): AssembledRequest {
   const headers: Record<string, string> = {};
   const bodyObj: Record<string, string | boolean> = {};
   const query: Record<string, string> = {};
 
+  const add = (key: string, value: string | boolean) => {
+    query[key] = String(value);
+    // Body keeps the native type (booleans stay booleans); the query string can't.
+    if (popup.method === 'POST') bodyObj[key] = value;
+  };
+
   for (const item of popup.contentItems) {
     if (!item.onSubmitRequest) continue;
     const value = resolveItemValue(item, values);
     if (value === undefined) continue;
-    const key = defaultKey(item);
-    const target = item.onSubmitRequest.target ?? 'body';
-
-    if (target === 'query' || popup.method === 'GET') {
-      query[key] = String(value);
-    } else {
-      bodyObj[key] = value;
-    }
+    add(defaultKey(item), value);
   }
 
-  // Static custom submit callback values — merged into body (or query for GET).
+  // Static custom submit callback values, alongside the resolved input values.
   for (const entry of popup.onSubmitCallbackPayload ?? []) {
     if (!entry.key) continue;
-    if (popup.method === 'GET') query[entry.key] = entry.value;
-    else bodyObj[entry.key] = entry.value;
+    add(entry.key, entry.value);
   }
 
   let url = popup.url;

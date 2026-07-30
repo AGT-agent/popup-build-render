@@ -47,6 +47,8 @@ export const en = {
     submissionHeading: "Submission",
     endpointUrl: "Endpoint URL",
     method: "Method",
+    methodHintGet: "All values are sent as URL query params.",
+    methodHintPost: "All values are sent both as URL query params and in the JSON body.",
     onSuccess: "On success",
     redirectNewTab: "In new tab",
     onErrorMessage: "On error message",
@@ -86,7 +88,6 @@ export const en = {
     color: "Color",
     backgroundColor: "Background color",
     required: "Required",
-    submitTarget: "Submit target",
     submitKey: "Submit key",
     options: "Options",
     optionLabel: "label",
@@ -156,10 +157,6 @@ export const en = {
       left: "left",
       center: "center",
       right: "right",
-    },
-    target: {
-      body: "body",
-      query: "query param",
     },
     contentType: {
       heading: "heading",

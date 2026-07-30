@@ -20,7 +20,7 @@ const popup: PopupModal = {
   onSuccess: { type: 'coupon', text: "You're in!", code: 'WELCOME15', copyable: true },
   contentItems: [
     { id: 'h', order: 0, type: 'heading', value: 'Get 15% off' },
-    { id: 'e', order: 1, type: 'email', value: 'Your email', required: true, onSubmitRequest: { target: 'body', key: 'email' } },
+    { id: 'e', order: 1, type: 'email', value: 'Your email', required: true, onSubmitRequest: { key: 'email' } },
     { id: 'b', order: 2, type: 'submit-button', value: 'Claim discount' },
   ],
 };

@@ -61,19 +61,19 @@ export function makeContentItem(
         ...base,
         value: text.emailLabel,
         required: true,
-        onSubmitRequest: { target: 'body', key: 'email' },
+        onSubmitRequest: { key: 'email' },
       };
     case 'free-text-input':
       return {
         ...base,
         value: text.freeTextLabel,
-        onSubmitRequest: { target: 'body', key: 'field' },
+        onSubmitRequest: { key: 'field' },
       };
     case 'checkbox':
       return {
         ...base,
         value: text.checkboxLabel,
-        onSubmitRequest: { target: 'body', key: 'optIn' },
+        onSubmitRequest: { key: 'optIn' },
       };
     case 'radio':
       return {
@@ -83,7 +83,7 @@ export function makeContentItem(
           { label: text.optionA, value: 'a' },
           { label: text.optionB, value: 'b' },
         ],
-        onSubmitRequest: { target: 'body', key: 'choice' },
+        onSubmitRequest: { key: 'choice' },
       };
     case 'submit-button':
       return { ...base, value: text.submit };
@@ -153,14 +153,14 @@ export function makeExamplePopup(): PopupModal {
         type: 'email',
         value: 'Your email',
         required: true,
-        onSubmitRequest: { target: 'body', key: 'email' },
+        onSubmitRequest: { key: 'email' },
       },
       {
         id: makeId('c'),
         order: 2,
         type: 'checkbox',
         value: 'Email me deals',
-        onSubmitRequest: { target: 'body', key: 'marketingOptIn' },
+        onSubmitRequest: { key: 'marketingOptIn' },
       },
       { id: makeId('btn'), order: 3, type: 'submit-button', value: 'Claim my discount' },
     ],

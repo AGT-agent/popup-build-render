@@ -21,7 +21,7 @@ const STARTER: PopupModal = {
   contentItems: [
     { id: 'h', order: 0, type: 'heading', value: 'Get 15% off your first order', styleProps: { align: 'center' } },
     { id: 't', order: 1, type: 'text', value: 'Join the list and grab your code.', styleProps: { align: 'center' } },
-    { id: 'e', order: 2, type: 'email', value: 'Your email', required: true, onSubmitRequest: { target: 'body', key: 'email' } },
+    { id: 'e', order: 2, type: 'email', value: 'Your email', required: true, onSubmitRequest: { key: 'email' } },
     { id: 'b', order: 3, type: 'submit-button', value: 'Claim my discount', styleProps: { backgroundColor: '#4f46e5' } },
   ],
 };

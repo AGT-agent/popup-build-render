@@ -8,7 +8,6 @@ import {
   type ContentItem,
   type ContentType,
   type PopupModal,
-  type RequestTarget,
 } from '@schema';
 import { useT, type Strings } from '../i18n';
 
@@ -214,30 +213,20 @@ function ItemCard({ item, index, count, onMove, onRemove, onUpdate }: ItemCardPr
             />
             <label htmlFor={`req-${item.id}`} style={{ margin: 0 }}>{t.content.required}</label>
           </div>
-          <div className="field-grid">
-            <div className="field-row">
-              <label>{t.content.submitTarget}</label>
-              <select
-                value={item.onSubmitRequest?.target ?? 'body'}
-                onChange={(e) => onUpdate(item.id, { onSubmitRequest: { ...item.onSubmitRequest, target: e.target.value as RequestTarget } })}
-              >
-                <option value="body">{t.enums.target.body}</option>
-                <option value="query">{t.enums.target.query}</option>
-              </select>
-            </div>
-            <div className="field-row">
-              <label>{t.content.submitKey}</label>
-              <input
-                type="text"
-                className={item.onSubmitRequest?.key && !isUrlSafeToken(item.onSubmitRequest.key) ? 'invalid' : undefined}
-                placeholder={item.type === 'email' ? 'email' : 'key'}
-                value={item.onSubmitRequest?.key ?? ''}
-                onChange={(e) => onUpdate(item.id, { onSubmitRequest: { target: item.onSubmitRequest?.target ?? 'body', key: e.target.value || undefined } })}
-              />
-              {item.onSubmitRequest?.key && !isUrlSafeToken(item.onSubmitRequest.key) && (
-                <span className="field-error">{URL_TOKEN_HINT}</span>
-              )}
-            </div>
+          {/* Where the value is sent is decided by the popup's method, not
+              per-item — the only thing left to author here is the key. */}
+          <div className="field-row">
+            <label>{t.content.submitKey}</label>
+            <input
+              type="text"
+              className={item.onSubmitRequest?.key && !isUrlSafeToken(item.onSubmitRequest.key) ? 'invalid' : undefined}
+              placeholder={item.type === 'email' ? 'email' : 'key'}
+              value={item.onSubmitRequest?.key ?? ''}
+              onChange={(e) => onUpdate(item.id, { onSubmitRequest: { key: e.target.value || undefined } })}
+            />
+            {item.onSubmitRequest?.key && !isUrlSafeToken(item.onSubmitRequest.key) && (
+              <span className="field-error">{URL_TOKEN_HINT}</span>
+            )}
           </div>
         </>
       )}
