@@ -140,6 +140,16 @@ export const en = {
     optionB: "Option B",
     submit: "Submit",
   },
+  // Seed copy for the success screen, written into the popup JSON the moment a
+  // template is picked. Kept apart from `defaults` above, which has to satisfy
+  // the schema's `DefaultText` — these are only ever read by the settings
+  // editor. Like all seed copy it is authored content: it lands in the JSON in
+  // the builder's language and the merchant edits it from there.
+  successDefaults: {
+    heading: "You’re all set!",
+    text: "Thanks — we’ve got your details.",
+    couponText: "Use this code at checkout:",
+  },
   // Dropdown option labels for the schema enums. Keys are the literal values
   // stored in the JSON and must cover each union exactly — call sites index
   // these by the union type, so a new schema value fails to compile until it

@@ -26,7 +26,7 @@ import {
   type SuccessTemplate,
   type SuccessType,
 } from '@schema';
-import { useT } from '../i18n';
+import { useT, type Strings } from '../i18n';
 
 interface Props {
   popup: PopupModal;
@@ -321,7 +321,7 @@ function SuccessSection({ popup, onChange }: Props) {
         <label>{t.settings.onSuccess}</label>
         <select
           value={success?.type ?? 'close'}
-          onChange={(e) => set(buildSuccess(e.target.value as SuccessType, success))}
+          onChange={(e) => set(buildSuccess(e.target.value as SuccessType, success, t.successDefaults))}
         >
           {SUCCESS_TYPES.map((s) => <option key={s} value={s}>{t.enums.success[s]}</option>)}
         </select>
@@ -367,7 +367,7 @@ function SuccessMessageFields({
         <label>{t.settings.messageTemplate}</label>
         <select
           value={template}
-          onChange={(e) => onChange(buildTemplate(e.target.value as SuccessTemplate, success))}
+          onChange={(e) => onChange(buildTemplate(e.target.value as SuccessTemplate, success, t.successDefaults))}
         >
           {SUCCESS_TEMPLATES.map((tpl) => (
             <option key={tpl} value={tpl}>{t.enums.successTemplate[tpl]}</option>
@@ -468,7 +468,14 @@ function SuccessMessageFields({
   );
 }
 
-function buildSuccess(type: SuccessType, prev?: SubmitSuccess): SubmitSuccess {
+/**
+ * Seed copy for a freshly picked success template. Passed in from the active
+ * dictionary rather than hardcoded, so a Hebrew builder seeds Hebrew — the
+ * strings go straight into the popup JSON as shopper-facing content.
+ */
+type SuccessSeed = Strings['successDefaults'];
+
+function buildSuccess(type: SuccessType, prev: SubmitSuccess | undefined, seed: SuccessSeed): SubmitSuccess {
   const previous = normalizeSuccess(prev);
   switch (type) {
     case 'close':
@@ -477,7 +484,7 @@ function buildSuccess(type: SuccessType, prev?: SubmitSuccess): SubmitSuccess {
       // Coming back to "message" restores whatever template was last authored.
       return previous?.type === 'message'
         ? previous
-        : buildTemplate('simple', { type: 'message' });
+        : buildTemplate('simple', { type: 'message' }, seed);
     case 'redirect':
       return { type: 'redirect', url: previous?.type === 'redirect' ? previous.url : 'https://example.com/thanks' };
   }
@@ -487,17 +494,17 @@ function buildSuccess(type: SuccessType, prev?: SubmitSuccess): SubmitSuccess {
  * Switch templates without discarding the shopper-facing copy: heading and text
  * carry over, and only the fields the new template actually reads get seeded.
  */
-function buildTemplate(template: SuccessTemplate, prev: SuccessMessage): SuccessMessage {
+function buildTemplate(template: SuccessTemplate, prev: SuccessMessage, seed: SuccessSeed): SuccessMessage {
   const base: SuccessMessage = {
     type: 'message',
     template,
-    heading: prev.heading ?? 'You’re all set!',
+    heading: prev.heading ?? seed.heading,
     text: prev.text,
     ...(prev.autoCloseMs ? { autoCloseMs: prev.autoCloseMs } : {}),
   };
   switch (template) {
     case 'simple':
-      return { ...base, text: prev.text ?? 'Thanks — we’ve got your details.' };
+      return { ...base, text: prev.text ?? seed.text };
     case 'image':
       return { ...base, imageUrl: prev.imageUrl ?? '' };
     case 'illustration':
@@ -509,7 +516,7 @@ function buildTemplate(template: SuccessTemplate, prev: SuccessMessage): Success
     case 'coupon':
       return {
         ...base,
-        text: prev.text ?? 'Use this code at checkout:',
+        text: prev.text ?? seed.couponText,
         code: prev.code ?? 'SAVE10',
         ...(prev.codeFromResponsePath ? { codeFromResponsePath: prev.codeFromResponsePath } : {}),
         copyable: prev.copyable !== false,

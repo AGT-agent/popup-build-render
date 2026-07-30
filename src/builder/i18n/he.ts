@@ -40,13 +40,15 @@ export const he: Strings = {
       "סלקטור (הצג רק בדפים המכילים אלמנט מתאים — השאירו ריק להצגה תמיד)",
     selectorPlaceholder: "#product-page, .cart-drawer",
     generateTag: "צור תגית",
-    generateTagTitle: "מילוי הסלקטור בתגית ייעודית לפופאפ הזה — ללא צורך בידע ב-CSS",
+    generateTagTitle:
+      "מילוי הסלקטור בתגית ייעודית לפופאפ הזה — ללא צורך בידע ב-CSS",
     tagHint: "הדביקו את הקוד הזה בכל דף שבו הפופאפ אמור להופיע:",
     submissionHeading: "שליחה",
     endpointUrl: "כתובת Endpoint",
     method: "שיטה",
     methodHintGet: "כל הערכים נשלחים כפרמטרים בכתובת (query params).",
-    methodHintPost: "כל הערכים נשלחים גם כפרמטרים בכתובת (query params) וגם בגוף הבקשה (JSON body).",
+    methodHintPost:
+      "כל הערכים נשלחים גם כפרמטרים בכתובת (query params) וגם בגוף הבקשה (JSON body).",
     onSuccess: "בשליחת טופס מוצלחת",
     redirectNewTab: "בכרטיסייה חדשה",
     onErrorMessage: "הודעת שגיאה",
@@ -67,15 +69,16 @@ export const he: Strings = {
     messageTemplate: "תבנית ההודעה",
     messageTemplateHint: {
       simple: "כותרת וטקסט על מסך אישור נקי.",
-      image: "התמונה שלכם מחליפה את תמונת הפריסה — או ממלאת את שני השלישים העליונים בפריסה הבסיסית.",
+      image:
+        "התמונה שלכם מחליפה את תמונת הפריסה — או ממלאת את שני השלישים העליונים בפריסה הבסיסית.",
       illustration: "איור מובנה מעל הכותרת והטקסט.",
       coupon: "כותרת, טקסט וקוד ההנחה על שובר שאפשר להעתיק.",
     },
     successHeading: "כותרת",
     successHeadingPlaceholder: "הכול מוכן!",
-    successImageUrl: "כתובת תמונת ההצלחה",
+    successImageUrl: "כתובת התמונה",
     illustration: "איור",
-    addConfetti: "הוסף קונפטי (יורד על הפופאפ בהצלחה)",
+    addConfetti: "הוסף אפקט קונפטי",
     couponCopyable: "הצג כפתור העתקה",
     staticCode: "קוד קבוע",
     codeFromResponse: "…או קוד מנתיב בתשובה",
@@ -129,6 +132,11 @@ export const he: Strings = {
     optionA: "אפשרות א",
     optionB: "אפשרות ב",
     submit: "שליחה",
+  },
+  successDefaults: {
+    heading: "הכול מוכן!",
+    text: "תודה — קיבלנו את הפרטים שלך.",
+    couponText: "השתמשו בקוד הזה בקופה:",
   },
   enums: {
     trigger: {

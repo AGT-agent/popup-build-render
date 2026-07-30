@@ -28,8 +28,14 @@ function toStyle(sp?: StyleProps): CSSProperties {
   };
 }
 
+/**
+ * `form.error` is a client-side validation miss — it stays inline under the
+ * still-visible form so the shopper can fix the field. `error` is a failed
+ * submit (the popup's `onError`), which takes over the body the way a success
+ * screen does, with a way back to the filled-in form.
+ */
 type Phase =
-  | { kind: 'form' }
+  | { kind: 'form'; error?: string }
   | { kind: 'error'; text: string }
   | { kind: 'success'; outcome: SubmitOutcome };
 
@@ -54,12 +60,12 @@ export function PopupContent({ popup, onClose, fetchImpl, preview }: PopupConten
   async function handleSubmit() {
     const missing = firstMissingRequired(popup, values);
     if (missing) {
-      setPhase({ kind: 'error', text: 'Please fill in the required fields.' });
+      setPhase({ kind: 'form', error: 'Please fill in the required fields.' });
       return;
     }
     const badEmail = firstInvalidEmail(popup, values);
     if (badEmail) {
-      setPhase({ kind: 'error', text: 'Please enter a valid email address.' });
+      setPhase({ kind: 'form', error: 'Please enter a valid email address.' });
       return;
     }
     setSubmitting(true);
@@ -204,7 +210,7 @@ export function PopupContent({ popup, onClose, fetchImpl, preview }: PopupConten
 
   const body = (
     <div className={`pm-body${flush ? ' pm-body-flush' : ''}`}>
-      {renderPhaseBody(phase, items, renderItem, onClose, photoInMedia)}
+      {renderPhaseBody(phase, items, renderItem, onClose, photoInMedia, () => setPhase({ kind: 'form' }))}
     </div>
   );
 
@@ -242,15 +248,36 @@ function renderPhaseBody(
   renderItem: (item: ContentItem) => JSX.Element | null,
   onClose?: () => void,
   photoInMedia?: boolean,
+  onRetry?: () => void,
 ) {
   if (phase.kind === 'success') {
     return <SuccessView outcome={phase.outcome} onClose={onClose} photoInMedia={photoInMedia} />;
   }
+  if (phase.kind === 'error') {
+    return <ErrorView text={phase.text} onRetry={onRetry} />;
+  }
   return (
     <>
       {items.map(renderItem)}
-      {phase.kind === 'error' && <p className="pm-error">{phase.text}</p>}
+      {phase.error && <p className="pm-error">{phase.error}</p>}
     </>
+  );
+}
+
+/**
+ * A failed submit, drawn as the mirror image of the `check` illustration —
+ * same disc, same geometry, red cross instead of a green tick. The form is left
+ * intact behind it, so "Try again" returns the shopper to what they typed.
+ */
+function ErrorView({ text, onRetry }: { text: string; onRetry?: () => void }) {
+  return (
+    <div className="pm-success pm-error-screen">
+      <div className="pm-success-stack">
+        <div className="pm-success-art">{ERROR_ART}</div>
+        <p className="pm-success-text">{text}</p>
+      </div>
+      <button className="pm-submit pm-success-done" onClick={() => onRetry?.()}>Try again</button>
+    </div>
   );
 }
 
@@ -411,6 +438,26 @@ const CHECK_MARK = (
 
 /** The tinted disc every illustration sits on — also what keeps the colored ones legible on a dark card. */
 const ART_DISC = <circle cx="60" cy="60" r="52" fill="#EDE9FE" />;
+
+/**
+ * The failed-submit counterpart to the `check` illustration: identical disc and
+ * circle geometry, a rose palette in place of the emerald one, and a cross for
+ * the tick. The scattered confetti dots the checkmark carries are dropped —
+ * they read as celebration, which is the wrong note on an error.
+ */
+const ERROR_ART = (
+  <svg viewBox="0 0 120 120" fill="none">
+    <circle cx="60" cy="60" r="52" fill="#FFE4E6" />
+    <circle cx="60" cy="58" r="30" fill="#F43F5E" />
+    <path
+      d="M49 47 71 69M71 47 49 69"
+      stroke="#fff"
+      strokeWidth="7.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+  </svg>
+);
 
 function illustrationSvg(kind: SuccessIllustration): JSX.Element {
   switch (kind) {
