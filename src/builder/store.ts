@@ -3,6 +3,7 @@ import { persist } from 'zustand/middleware';
 import {
   makeExamplePopup,
   makePopup,
+  normalizeSuccess,
   type DefaultText,
   type PopupDirection,
   type PopupModal,
@@ -106,23 +107,31 @@ export const useBuilderStore = create<BuilderState>()(
       importPopups: (incoming) =>
         set((s) => {
           const byId = new Map(s.popups.map((p) => [p.id, p]));
-          for (const p of incoming) byId.set(p.id, dropLegacyTarget(p));
+          for (const p of incoming) byId.set(p.id, upgrade(p));
           return { popups: Array.from(byId.values()) };
         }),
     }),
     {
       name: 'popup-builder-store',
-      version: 1,
+      version: 2,
       // v1 retired the per-item `onSubmitRequest.target` — the popup's `method`
-      // now decides where values are sent. Strip the dead key so it stops
-      // showing up in exported JSON.
+      // now decides where values are sent. v2 folded the standalone `coupon`
+      // success into a `message` on the `coupon` template. Both rewrites are
+      // idempotent, so one pass covers a store persisted at either version.
       migrate: (state) => {
         const s = state as BuilderState;
-        return { ...s, popups: (s.popups ?? []).map(dropLegacyTarget) };
+        return { ...s, popups: (s.popups ?? []).map(upgrade) };
       },
     },
   ),
 );
+
+/** Bring a stored or imported popup up to the current schema shape. */
+function upgrade(popup: PopupModal): PopupModal {
+  const next = dropLegacyTarget(popup);
+  if (next.onSuccess?.type !== 'coupon') return next;
+  return { ...next, onSuccess: normalizeSuccess(next.onSuccess) };
+}
 
 /** Remove the pre-v1 `onSubmitRequest.target` key from a stored popup. */
 function dropLegacyTarget(popup: PopupModal): PopupModal {

@@ -67,9 +67,23 @@ export const en = {
     dirRtl: "RTL",
     borderRadius: "Border radius (px)",
     imageUrl: "Image URL",
-    successMessage: "Success message",
+    successMessage: "Message text",
     redirectUrl: "Redirect URL",
-    couponIntro: "Coupon intro text",
+    messageTemplate: "Message template",
+    // One line per template, shown under the picker so the merchant knows what
+    // the extra fields below it will do before filling them in.
+    messageTemplateHint: {
+      simple: "Heading and text on a clean confirmation screen.",
+      image: "Your image replaces the layout's image — or fills the top two thirds on the basic layout.",
+      illustration: "A built-in illustration above the heading and text.",
+      coupon: "Heading, text, and the discount code on a ticket the shopper can copy.",
+    },
+    successHeading: "Heading",
+    successHeadingPlaceholder: "You're all set!",
+    successImageUrl: "Success image URL",
+    illustration: "Illustration",
+    addConfetti: "Add confetti (rains over the popup on success)",
+    couponCopyable: "Show copy button",
     staticCode: "Static code",
     codeFromResponse: "…or code from response path",
     codeFromResponsePlaceholder: "data.discountCode",
@@ -153,8 +167,19 @@ export const en = {
     success: {
       close: "close",
       message: "message",
-      coupon: "coupon",
       redirect: "Redirect and close",
+    },
+    successTemplate: {
+      simple: "Simple",
+      image: "Image",
+      illustration: "Illustration",
+      coupon: "Coupon",
+    },
+    illustration: {
+      check: "Checkmark",
+      celebration: "Celebration",
+      gift: "Gift",
+      envelope: "Envelope",
     },
     align: {
       left: "left",

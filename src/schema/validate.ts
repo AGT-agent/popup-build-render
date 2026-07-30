@@ -2,9 +2,12 @@ import {
   CONTENT_TYPES,
   DESIGNS,
   FREQUENCIES,
+  SUCCESS_ILLUSTRATIONS,
+  SUCCESS_TEMPLATES,
   designUsesImage,
   isInputType,
   isUrlSafeToken,
+  normalizeSuccess,
   type ContentItem,
   type PopupModal,
 } from './types';
@@ -61,6 +64,41 @@ function validateContentItem(item: ContentItem, index: number, issues: Validatio
   }
 }
 
+/**
+ * The success screen. Every check is a warning: a half-filled template still
+ * renders (the missing piece is simply skipped), so it must not block a save.
+ */
+function validateSuccess(popup: PopupModal, issues: ValidationIssue[]): void {
+  const success = normalizeSuccess(popup.onSuccess);
+  if (success?.type !== 'message') return;
+
+  const template = success.template ?? 'simple';
+  if (!SUCCESS_TEMPLATES.includes(template)) {
+    issues.push({ path: 'onSuccess.template', message: `Unknown message template "${template}".`, level: 'error' });
+    return;
+  }
+  if (!success.heading && !success.text) {
+    issues.push({ path: 'onSuccess.text', message: 'The success message has no heading or text.', level: 'warning' });
+  }
+  if (template === 'image' && !success.imageUrl) {
+    issues.push({ path: 'onSuccess.imageUrl', message: 'The "image" template needs an imageUrl.', level: 'warning' });
+  }
+  if (template === 'illustration' && success.illustration && !SUCCESS_ILLUSTRATIONS.includes(success.illustration)) {
+    issues.push({
+      path: 'onSuccess.illustration',
+      message: `Unknown illustration "${success.illustration}".`,
+      level: 'error',
+    });
+  }
+  if (template === 'coupon' && !success.code && !success.codeFromResponsePath) {
+    issues.push({
+      path: 'onSuccess.code',
+      message: 'The "coupon" template needs a static code or a response path.',
+      level: 'warning',
+    });
+  }
+}
+
 /** Structural validation. Returns issues; empty array = valid. */
 export function validatePopup(popup: PopupModal): ValidationIssue[] {
   const issues: ValidationIssue[] = [];
@@ -87,6 +125,8 @@ export function validatePopup(popup: PopupModal): ValidationIssue[] {
   if (popup.frequency && !FREQUENCIES.includes(popup.frequency)) {
     issues.push({ path: 'frequency', message: `Unknown frequency "${popup.frequency}".`, level: 'error' });
   }
+
+  validateSuccess(popup, issues);
 
   // Custom submit callback values become request keys too — enforce the same URL-safe rule.
   (popup.onSubmitCallbackPayload ?? []).forEach((entry, i) => {

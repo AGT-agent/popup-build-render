@@ -2,9 +2,13 @@ import { useState } from 'react';
 import {
   DESIGNS,
   FREQUENCIES,
+  SUCCESS_ILLUSTRATIONS,
+  SUCCESS_TEMPLATES,
+  SUCCESS_TYPES,
   URL_TOKEN_HINT,
   designUsesImage,
   isUrlSafeToken,
+  normalizeSuccess,
   popupTagSelector,
   popupTagSnippet,
   popupTagValue,
@@ -17,6 +21,10 @@ import {
   type PopupModal,
   type PopupTrigger,
   type SubmitSuccess,
+  type SuccessIllustration,
+  type SuccessMessage,
+  type SuccessTemplate,
+  type SuccessType,
 } from '@schema';
 import { useT } from '../i18n';
 
@@ -26,7 +34,6 @@ interface Props {
 }
 
 const TRIGGER_TYPES: PopupTrigger['type'][] = ['immediate', 'delay', 'scroll'];
-const SUCCESS_TYPES: SubmitSuccess['type'][] = ['close', 'message', 'coupon', 'redirect'];
 
 /** Delivery + Submission — the "Settings" tab. */
 export function SettingsEditor({ popup, onChange }: Props) {
@@ -127,16 +134,7 @@ export function SettingsEditor({ popup, onChange }: Props) {
           </div>
         </div>
 
-        <div className="field-row">
-          <label>{t.settings.onSuccess}</label>
-          <select
-            value={popup.onSuccess?.type ?? 'close'}
-            onChange={(e) => onChange({ onSuccess: buildSuccess(e.target.value as SubmitSuccess['type'], popup.onSuccess) })}
-          >
-            {SUCCESS_TYPES.map((s) => <option key={s} value={s}>{t.enums.success[s]}</option>)}
-          </select>
-        </div>
-        <SuccessFields success={popup.onSuccess} onChange={(s) => onChange({ onSuccess: s })} />
+        <SuccessSection popup={popup} onChange={onChange} />
 
         <div className="field-row">
           <label>{t.settings.onErrorMessage}</label>
@@ -303,70 +301,218 @@ export function CustomSubmitValues({
   );
 }
 
-function buildSuccess(type: SubmitSuccess['type'], prev?: SubmitSuccess): SubmitSuccess {
+/**
+ * "On success", plus — when it's a message — the template picker that decides
+ * which pre-designed success screen the shopper lands on. The coupon lives in
+ * there rather than in the top-level dropdown: it is one of the message
+ * layouts, not a different kind of outcome.
+ */
+function SuccessSection({ popup, onChange }: Props) {
+  const t = useT();
+  // Read through the normalizer so a popup still carrying the legacy
+  // `{ type: 'coupon' }` opens on the coupon template instead of falling back
+  // to "close" and silently losing its code.
+  const success = normalizeSuccess(popup.onSuccess);
+  const set = (s: SubmitSuccess) => onChange({ onSuccess: s });
+
+  return (
+    <>
+      <div className="field-row">
+        <label>{t.settings.onSuccess}</label>
+        <select
+          value={success?.type ?? 'close'}
+          onChange={(e) => set(buildSuccess(e.target.value as SuccessType, success))}
+        >
+          {SUCCESS_TYPES.map((s) => <option key={s} value={s}>{t.enums.success[s]}</option>)}
+        </select>
+      </div>
+
+      {success?.type === 'message' && <SuccessMessageFields success={success} onChange={set} />}
+
+      {success?.type === 'redirect' && (
+        <>
+          <div className="field-row">
+            <label>{t.settings.redirectUrl}</label>
+            <input type="url" value={success.url} onChange={(e) => set({ ...success, url: e.target.value })} />
+          </div>
+          <div className="field-row inline">
+            <input
+              id="redirect-new-tab"
+              type="checkbox"
+              checked={success.newTab === true}
+              onChange={(e) => set({ ...success, newTab: e.target.checked || undefined })}
+            />
+            <label htmlFor="redirect-new-tab" style={{ margin: 0 }}>{t.settings.redirectNewTab}</label>
+          </div>
+        </>
+      )}
+    </>
+  );
+}
+
+/** The template picker and the fields the picked template actually reads. */
+function SuccessMessageFields({
+  success,
+  onChange,
+}: {
+  success: SuccessMessage;
+  onChange: (s: SubmitSuccess) => void;
+}) {
+  const t = useT();
+  const template = success.template ?? 'simple';
+
+  return (
+    <>
+      <div className="field-row">
+        <label>{t.settings.messageTemplate}</label>
+        <select
+          value={template}
+          onChange={(e) => onChange(buildTemplate(e.target.value as SuccessTemplate, success))}
+        >
+          {SUCCESS_TEMPLATES.map((tpl) => (
+            <option key={tpl} value={tpl}>{t.enums.successTemplate[tpl]}</option>
+          ))}
+        </select>
+        <span className="field-hint">{t.settings.messageTemplateHint[template]}</span>
+      </div>
+
+      <div className="field-grid">
+        <div className="field-row">
+          <label>{t.settings.successHeading}</label>
+          <input
+            type="text"
+            value={success.heading ?? ''}
+            placeholder={t.settings.successHeadingPlaceholder}
+            onChange={(e) => onChange({ ...success, heading: e.target.value || undefined })}
+          />
+        </div>
+        <div className="field-row">
+          <label>{t.settings.successMessage}</label>
+          <input
+            type="text"
+            value={success.text ?? ''}
+            onChange={(e) => onChange({ ...success, text: e.target.value || undefined })}
+          />
+        </div>
+      </div>
+
+      {template === 'image' && (
+        <div className="field-row">
+          <label>{t.settings.successImageUrl}</label>
+          <input
+            type="url"
+            value={success.imageUrl ?? ''}
+            onChange={(e) => onChange({ ...success, imageUrl: e.target.value || undefined })}
+          />
+        </div>
+      )}
+
+      {template === 'illustration' && (
+        <>
+          <div className="field-row">
+            <label>{t.settings.illustration}</label>
+            <select
+              value={success.illustration ?? 'check'}
+              onChange={(e) => onChange({ ...success, illustration: e.target.value as SuccessIllustration })}
+            >
+              {SUCCESS_ILLUSTRATIONS.map((art) => (
+                <option key={art} value={art}>{t.enums.illustration[art]}</option>
+              ))}
+            </select>
+          </div>
+          <div className="field-row inline">
+            <input
+              id="success-confetti"
+              type="checkbox"
+              checked={success.confetti === true}
+              onChange={(e) => onChange({ ...success, confetti: e.target.checked || undefined })}
+            />
+            <label htmlFor="success-confetti" style={{ margin: 0 }}>{t.settings.addConfetti}</label>
+          </div>
+        </>
+      )}
+
+      {template === 'coupon' && (
+        <>
+          <div className="field-grid">
+            <div className="field-row">
+              <label>{t.settings.staticCode}</label>
+              <input
+                type="text"
+                value={success.code ?? ''}
+                onChange={(e) => onChange({ ...success, code: e.target.value || undefined })}
+              />
+            </div>
+            <div className="field-row">
+              <label>{t.settings.codeFromResponse}</label>
+              <input
+                type="text"
+                value={success.codeFromResponsePath ?? ''}
+                placeholder={t.settings.codeFromResponsePlaceholder}
+                onChange={(e) => onChange({ ...success, codeFromResponsePath: e.target.value || undefined })}
+              />
+            </div>
+          </div>
+          <div className="field-row inline">
+            <input
+              id="coupon-copyable"
+              type="checkbox"
+              checked={success.copyable !== false}
+              onChange={(e) => onChange({ ...success, copyable: e.target.checked })}
+            />
+            <label htmlFor="coupon-copyable" style={{ margin: 0 }}>{t.settings.couponCopyable}</label>
+          </div>
+        </>
+      )}
+    </>
+  );
+}
+
+function buildSuccess(type: SuccessType, prev?: SubmitSuccess): SubmitSuccess {
+  const previous = normalizeSuccess(prev);
   switch (type) {
     case 'close':
       return { type: 'close' };
     case 'message':
-      return { type: 'message', text: prev?.type === 'message' ? prev.text : 'Thanks!' };
-    case 'coupon':
-      return { type: 'coupon', text: prev?.type === 'coupon' ? prev.text : "Here's your code:", code: 'SAVE10', copyable: true };
+      // Coming back to "message" restores whatever template was last authored.
+      return previous?.type === 'message'
+        ? previous
+        : buildTemplate('simple', { type: 'message' });
     case 'redirect':
-      return { type: 'redirect', url: prev?.type === 'redirect' ? prev.url : 'https://example.com/thanks' };
+      return { type: 'redirect', url: previous?.type === 'redirect' ? previous.url : 'https://example.com/thanks' };
   }
 }
 
-function SuccessFields({ success, onChange }: { success?: SubmitSuccess; onChange: (s: SubmitSuccess) => void }) {
-  const t = useT();
-  if (!success || success.type === 'close') return null;
-
-  if (success.type === 'message') {
-    return (
-      <div className="field-row">
-        <label>{t.settings.successMessage}</label>
-        <input type="text" value={success.text} onChange={(e) => onChange({ ...success, text: e.target.value })} />
-      </div>
-    );
+/**
+ * Switch templates without discarding the shopper-facing copy: heading and text
+ * carry over, and only the fields the new template actually reads get seeded.
+ */
+function buildTemplate(template: SuccessTemplate, prev: SuccessMessage): SuccessMessage {
+  const base: SuccessMessage = {
+    type: 'message',
+    template,
+    heading: prev.heading ?? 'You’re all set!',
+    text: prev.text,
+    ...(prev.autoCloseMs ? { autoCloseMs: prev.autoCloseMs } : {}),
+  };
+  switch (template) {
+    case 'simple':
+      return { ...base, text: prev.text ?? 'Thanks — we’ve got your details.' };
+    case 'image':
+      return { ...base, imageUrl: prev.imageUrl ?? '' };
+    case 'illustration':
+      return {
+        ...base,
+        illustration: prev.illustration ?? 'check',
+        ...(prev.confetti ? { confetti: true } : {}),
+      };
+    case 'coupon':
+      return {
+        ...base,
+        text: prev.text ?? 'Use this code at checkout:',
+        code: prev.code ?? 'SAVE10',
+        ...(prev.codeFromResponsePath ? { codeFromResponsePath: prev.codeFromResponsePath } : {}),
+        copyable: prev.copyable !== false,
+      };
   }
-  if (success.type === 'redirect') {
-    return (
-      <>
-        <div className="field-row">
-          <label>{t.settings.redirectUrl}</label>
-          <input type="url" value={success.url} onChange={(e) => onChange({ ...success, url: e.target.value })} />
-        </div>
-        <div className="field-row inline">
-          <input
-            id="redirect-new-tab"
-            type="checkbox"
-            checked={success.newTab === true}
-            onChange={(e) => onChange({ ...success, newTab: e.target.checked || undefined })}
-          />
-          <label htmlFor="redirect-new-tab" style={{ margin: 0 }}>{t.settings.redirectNewTab}</label>
-        </div>
-      </>
-    );
-  }
-  // coupon
-  return (
-    <div className="field-grid">
-      <div className="field-row">
-        <label>{t.settings.couponIntro}</label>
-        <input type="text" value={success.text ?? ''} onChange={(e) => onChange({ ...success, text: e.target.value })} />
-      </div>
-      <div className="field-row">
-        <label>{t.settings.staticCode}</label>
-        <input type="text" value={success.code ?? ''} onChange={(e) => onChange({ ...success, code: e.target.value })} />
-      </div>
-      <div className="field-row">
-        <label>{t.settings.codeFromResponse}</label>
-        <input
-          type="text"
-          value={success.codeFromResponsePath ?? ''}
-          placeholder={t.settings.codeFromResponsePlaceholder}
-          onChange={(e) => onChange({ ...success, codeFromResponsePath: e.target.value || undefined })}
-        />
-      </div>
-    </div>
-  );
 }

@@ -17,7 +17,14 @@ const popup: PopupModal = {
   design: 'basic',
   dismissible: true,
   frequency: 'session',
-  onSuccess: { type: 'coupon', text: "You're in!", code: 'WELCOME15', copyable: true },
+  onSuccess: {
+    type: 'message',
+    template: 'coupon',
+    heading: "You're in!",
+    text: 'Use this code at checkout:',
+    code: 'WELCOME15',
+    copyable: true,
+  },
   contentItems: [
     { id: 'h', order: 0, type: 'heading', value: 'Get 15% off' },
     { id: 'e', order: 1, type: 'email', value: 'Your email', required: true, onSubmitRequest: { key: 'email' } },

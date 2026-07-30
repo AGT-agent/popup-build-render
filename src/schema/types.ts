@@ -72,17 +72,108 @@ export interface ContentItem {
   onSubmitRequest?: OnSubmitRequest;
 }
 
+/**
+ * Which pre-designed success screen a `message` renders. Every template shares
+ * the same optional `heading` + `text`; the rest of the fields are per-template:
+ * `image` reads `imageUrl`, `illustration` reads `illustration`, and `coupon`
+ * reads `code` / `codeFromResponsePath` / `copyable`.
+ */
+export type SuccessTemplate = 'simple' | 'image' | 'illustration' | 'coupon';
+
+/**
+ * Built-in artwork for the `illustration` template — drawn by the renderer, no
+ * asset hosting needed. All but `envelope` carry their own flat palette;
+ * `envelope` is line art tinted with the card's text color.
+ */
+export type SuccessIllustration = 'check' | 'celebration' | 'gift' | 'envelope';
+
+export interface SuccessMessage {
+  type: 'message';
+  /** Defaults to 'simple' when omitted. */
+  template?: SuccessTemplate;
+  heading?: string;
+  text?: string;
+  /** `image` template — the picture shown above the copy. */
+  imageUrl?: string;
+  /** `illustration` template — defaults to 'check' when omitted. */
+  illustration?: SuccessIllustration;
+  /** Rain confetti over the popup when the success screen appears. */
+  confetti?: boolean;
+  /** `coupon` template — a static code, OR… */
+  code?: string;
+  /** `coupon` template — …a dot-path to a per-shopper code in the JSON response. */
+  codeFromResponsePath?: string;
+  /** `coupon` template — show the copy button. Default true. */
+  copyable?: boolean;
+  autoCloseMs?: number;
+}
+
+/**
+ * Pre-template coupon success. Superseded by a `message` with the `coupon`
+ * template; still accepted so popups authored against the old schema keep
+ * working — {@link normalizeSuccess} folds it into the new shape on read.
+ *
+ * @deprecated Use `{ type: 'message', template: 'coupon' }`.
+ */
+export interface LegacySuccessCoupon {
+  type: 'coupon';
+  text?: string;
+  code?: string;
+  codeFromResponsePath?: string;
+  copyable?: boolean;
+}
+
 export type SubmitSuccess =
   | { type: 'close' }
-  | { type: 'message'; text: string; autoCloseMs?: number }
-  | {
-      type: 'coupon';
-      text?: string;
-      code?: string;
-      codeFromResponsePath?: string;
-      copyable?: boolean;
-    }
+  | SuccessMessage
+  | LegacySuccessCoupon
   | { type: 'redirect'; url: string; newTab?: boolean };
+
+/** The success types a popup can be authored with — `coupon` is a message template now. */
+export type SuccessType = 'close' | 'message' | 'redirect';
+
+export const SUCCESS_TYPES: SuccessType[] = ['close', 'message', 'redirect'];
+
+export const SUCCESS_TEMPLATES: SuccessTemplate[] = ['simple', 'image', 'illustration', 'coupon'];
+
+export const SUCCESS_ILLUSTRATIONS: SuccessIllustration[] = [
+  'check',
+  'celebration',
+  'gift',
+  'envelope',
+];
+
+/**
+ * Collapse the legacy `{ type: 'coupon' }` success into its `message` +
+ * `coupon` template equivalent, so every reader (renderer and builder alike)
+ * only has to understand one shape. Anything else passes through untouched.
+ */
+export type NormalizedSuccess =
+  | { type: 'close' }
+  | SuccessMessage
+  | { type: 'redirect'; url: string; newTab?: boolean };
+
+export function normalizeSuccess(success: SubmitSuccess): NormalizedSuccess;
+export function normalizeSuccess(success?: SubmitSuccess): NormalizedSuccess | undefined;
+export function normalizeSuccess(success?: SubmitSuccess): NormalizedSuccess | undefined {
+  if (!success || success.type !== 'coupon') return success;
+  const { text, code, codeFromResponsePath, copyable } = success;
+  return {
+    type: 'message',
+    template: 'coupon',
+    ...(text ? { text } : {}),
+    ...(code ? { code } : {}),
+    ...(codeFromResponsePath ? { codeFromResponsePath } : {}),
+    ...(copyable !== undefined ? { copyable } : {}),
+  };
+}
+
+/** The template a success message renders with — 'simple' unless it says otherwise. */
+export function successTemplate(success?: SubmitSuccess): SuccessTemplate {
+  const normalized = normalizeSuccess(success);
+  if (normalized?.type !== 'message') return 'simple';
+  return normalized.template ?? 'simple';
+}
 
 export type SubmitError = { type: 'message'; text: string };
 

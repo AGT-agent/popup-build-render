@@ -15,7 +15,14 @@ const STARTER: PopupModal = {
   design: 'basic',
   dismissible: true,
   frequency: 'always',
-  onSuccess: { type: 'coupon', text: "You're in! Use this at checkout:", code: 'DEMO15', copyable: true },
+  onSuccess: {
+    type: 'message',
+    template: 'coupon',
+    heading: "You're in!",
+    text: 'Use this code at checkout:',
+    code: 'DEMO15',
+    copyable: true,
+  },
   onError: { type: 'message', text: 'Something went wrong — please try again.' },
   onSubmitCallbackPayload: [{ key: 'source', value: 'demo-page' }],
   contentItems: [

@@ -253,23 +253,34 @@ Once the merchant request resolves, the modal reacts per these top-level fields.
 ```ts
 type SubmitSuccess =
   | { type: "close" } // just close the modal (default when onSuccess omitted)
-  | {
-      type: "message"; // swap the body for a success message
-      text: string;
-      autoCloseMs?: number;
-    } // optional auto-close after N ms (else stays until dismissed)
-  | {
-      type: "coupon"; // reveal a discount code to copy
-      text?: string; // e.g. "Here's your 15% off code:"
-      code?: string; // static code, OR…
-      codeFromResponsePath?: string; // …pull a per-shopper code from the merchant JSON response, e.g. "data.coupon"
-      copyable?: boolean;
-    } // show a copy button — default true
+  | SuccessMessage // swap the body for one of the pre-designed success screens
   | {
       type: "redirect"; // navigate the shopper somewhere
       url: string;
       newTab?: boolean;
     }; // opens in a new tab and closes the popup; otherwise navigates this page
+
+// Which pre-designed success screen the message renders as.
+type SuccessTemplate = "simple" | "image" | "illustration" | "coupon";
+
+// Built-in artwork for the "illustration" template — drawn by the renderer.
+// All but "envelope" are flat full-color pieces on a tinted disc; "envelope" is
+// line art tinted with the card's text color.
+type SuccessIllustration = "check" | "celebration" | "gift" | "envelope";
+
+interface SuccessMessage {
+  type: "message";
+  template?: SuccessTemplate; // default "simple"
+  heading?: string; // e.g. "You're in!"
+  text?: string; // e.g. "Use this code at checkout:"
+  imageUrl?: string; // "image" template — takes over the design's image slot, or the top two thirds on "basic"
+  illustration?: SuccessIllustration; // "illustration" template — default "check"
+  confetti?: boolean; // rain confetti over the popup when the success screen appears
+  code?: string; // "coupon" template — static code, OR…
+  codeFromResponsePath?: string; // …a per-shopper code from the merchant JSON response, e.g. "data.coupon"
+  copyable?: boolean; // "coupon" template — show the copy button, default true
+  autoCloseMs?: number; // auto-close after N ms (else stays until dismissed)
+}
 
 type SubmitError = { type: "message"; text: string }; // show an error, keep the form open to retry (default)
 ```
@@ -277,7 +288,10 @@ type SubmitError = { type: "message"; text: string }; // show an error, keep the
 Notes:
 
 - **Default success** (no `onSuccess`) = `{ type: 'close' }`. **Default error** = an inline generic message; the form stays open so the shopper can retry.
-- **`coupon.codeFromResponsePath`** covers the common "merchant mints a unique code and returns it" case — a dot-path into the parsed JSON response. If both `code` and `codeFromResponsePath` are set, the response path wins; if the path resolves to nothing, fall back to `code`.
+- **Every template shares `heading` + `text`**; the remaining fields are read only by the template that owns them, and are ignored otherwise. `simple` and `coupon` also render a small confirmation badge.
+- **`image` follows the popup's `design`.** On `basic` it is a two-part layout: the photo covers the top two thirds of the body edge to edge (cropped to fill), with the heading, text and Done button in the bottom third — long copy pushes the split past a third rather than being clipped. On `image-left` / `image-right` / `image-behind` the design already has a picture slot, so the success photo **replaces** the top-level `imageUrl` in that slot for the success screen and the body shows only the copy — never two pictures at once. If the success `imageUrl` is blank, the design keeps its own image.
+- **`codeFromResponsePath`** covers the common "merchant mints a unique code and returns it" case — a dot-path into the parsed JSON response. If both `code` and `codeFromResponsePath` are set, the response path wins; if the path resolves to nothing, fall back to `code`.
+- **Legacy `{ type: "coupon" }`** — the coupon used to be its own success type. Popups authored that way still render: the renderer folds them into `{ type: "message", template: "coupon" }` on read, and the builder rewrites them on save. Author new popups with the template.
 - "Success" vs "error" is decided by HTTP status (2xx = success). Whether we also inspect the response body for a merchant-signalled failure is an open question ([§10](#10-open-questions)).
 
 Example success block for the welcome-15 popup above:
@@ -285,8 +299,10 @@ Example success block for the welcome-15 popup above:
 ```jsonc
 {
   "onSuccess": {
-    "type": "coupon",
-    "text": "You're in! Use this at checkout:",
+    "type": "message",
+    "template": "coupon",
+    "heading": "You're in!",
+    "text": "Use this code at checkout:",
     "codeFromResponsePath": "data.discountCode",
     "copyable": true,
   },

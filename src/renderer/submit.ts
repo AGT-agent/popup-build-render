@@ -1,4 +1,4 @@
-import type { ContentItem, PopupModal, SubmitError, SubmitSuccess } from '@schema';
+import { normalizeSuccess, type ContentItem, type PopupModal, type SubmitError, type SubmitSuccess } from '@schema';
 
 /** Live form values, keyed by content item id. */
 export type FormValues = Record<string, string | boolean>;
@@ -7,7 +7,7 @@ export interface SubmitOutcome {
   ok: boolean;
   success?: SubmitSuccess;
   error?: SubmitError;
-  /** Resolved coupon code, when onSuccess is a coupon. */
+  /** Resolved coupon code, when onSuccess is a message on the `coupon` template. */
   couponCode?: string;
 }
 
@@ -125,12 +125,15 @@ export function firstInvalidEmail(popup: PopupModal, values: FormValues): string
 }
 
 function resolveCoupon(success: SubmitSuccess, responseJson: unknown): string | undefined {
-  if (success.type !== 'coupon') return undefined;
-  if (success.codeFromResponsePath) {
-    const fromResponse = readPath(responseJson, success.codeFromResponsePath);
+  // Normalize first so a legacy `{ type: 'coupon' }` popup resolves its code
+  // exactly like the `message` + `coupon` template that replaced it.
+  const normalized = normalizeSuccess(success);
+  if (normalized.type !== 'message' || normalized.template !== 'coupon') return undefined;
+  if (normalized.codeFromResponsePath) {
+    const fromResponse = readPath(responseJson, normalized.codeFromResponsePath);
     if (fromResponse != null && fromResponse !== '') return String(fromResponse);
   }
-  return success.code;
+  return normalized.code;
 }
 
 /**

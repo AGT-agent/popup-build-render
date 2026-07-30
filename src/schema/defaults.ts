@@ -133,8 +133,10 @@ export function makeExamplePopup(): PopupModal {
     dismissible: true,
     frequency: 'session',
     onSuccess: {
-      type: 'coupon',
-      text: "You're in! Use this at checkout:",
+      type: 'message',
+      template: 'coupon',
+      heading: "You're in!",
+      text: 'Use this code at checkout:',
       code: 'WELCOME15',
       copyable: true,
     },
