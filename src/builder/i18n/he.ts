@@ -84,6 +84,8 @@ export const he: Strings = {
     galleryComingSoon: "גלריית תמונות — בקרוב 🎉",
     successMessage: "הודעת הצלחה",
     redirectUrl: "כתובת הפניה",
+    forwardValues: "העברת ערכי הטופס לכתובת",
+    forwardValuesHint: "מוסיף את השדות שנשלחו כפרמטרים בכתובת, כך שדף היעד יוכל להשתמש בהם — למשל לפנות למבקר בשמו.",
     couponIntro: "טקסט מקדים לקופון",
     staticCode: "קוד קבוע",
     codeFromResponse: "…או קוד מנתיב בתשובה",

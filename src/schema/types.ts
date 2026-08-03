@@ -126,7 +126,17 @@ export type SubmitSuccess =
       codeFromResponsePath?: string;
       copyable?: boolean;
     }
-  | { type: 'redirect'; url: string; newTab?: boolean };
+  | {
+      type: 'redirect';
+      url: string;
+      newTab?: boolean;
+      /**
+       * When true, the submitted field values are appended to the redirect URL
+       * as query params (keyed by each field's submit key), so the destination
+       * page can personalize — e.g. greet the visitor by name on a thank-you page.
+       */
+      forwardValues?: boolean;
+    };
 
 export type SubmitError = { type: 'message'; text: string };
 

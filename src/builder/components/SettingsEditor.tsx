@@ -359,9 +359,23 @@ function SuccessFields({ success, onChange }: { success?: SubmitSuccess; onChang
   }
   if (success.type === 'redirect') {
     return (
-      <div className="field-row">
-        <label>{t.settings.redirectUrl}</label>
-        <input type="url" value={success.url} onChange={(e) => onChange({ ...success, url: e.target.value })} />
+      <div className="field-grid">
+        <div className="field-row">
+          <label>{t.settings.redirectUrl}</label>
+          <input type="url" value={success.url} onChange={(e) => onChange({ ...success, url: e.target.value })} />
+        </div>
+        <div className="field-row inline" style={{ alignItems: 'center' }}>
+          <input
+            id="forwardValues"
+            type="checkbox"
+            checked={Boolean(success.forwardValues)}
+            onChange={(e) => onChange({ ...success, forwardValues: e.target.checked || undefined })}
+          />
+          <label htmlFor="forwardValues" style={{ margin: 0 }}>{t.settings.forwardValues}</label>
+        </div>
+        <p className="sub" style={{ fontSize: 12, color: 'var(--muted)', margin: 0 }}>
+          {t.settings.forwardValuesHint}
+        </p>
       </div>
     );
   }

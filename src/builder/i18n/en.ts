@@ -86,6 +86,8 @@ export const en = {
     galleryComingSoon: 'Gallery coming soon',
     successMessage: 'Success message',
     redirectUrl: 'Redirect URL',
+    forwardValues: 'Forward form values to the URL',
+    forwardValuesHint: 'Adds the submitted fields as query params so the destination page can use them — e.g. greet the visitor by name.',
     couponIntro: 'Coupon intro text',
     staticCode: 'Static code',
     codeFromResponse: '…or code from response path',

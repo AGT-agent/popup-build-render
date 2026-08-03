@@ -13,6 +13,7 @@ export { useTrigger } from './useTrigger';
 export { canOpen, markShown } from './frequency';
 export {
   assembleRequest,
+  appendValuesToUrl,
   submitPopup,
   firstMissingRequired,
   readPath,

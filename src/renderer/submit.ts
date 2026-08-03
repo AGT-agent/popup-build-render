@@ -86,6 +86,25 @@ export function assembleRequest(popup: PopupModal, values: FormValues): Assemble
   return req;
 }
 
+/**
+ * Append the submitted field values to a URL as query params, keyed by each
+ * field's submit key. Used on redirect success so the destination page (e.g. a
+ * thank-you page) can read them — greet the visitor by name, and so on. Existing
+ * query params on the URL are preserved; empty fields are skipped.
+ */
+export function appendValuesToUrl(popup: PopupModal, values: FormValues, url: string): string {
+  const params = new URLSearchParams();
+  for (const item of popup.contentItems) {
+    if (!item.onSubmitRequest) continue;
+    const value = resolveItemValue(item, values);
+    if (value === undefined || value === '') continue;
+    params.set(defaultKey(item), String(value));
+  }
+  const qs = params.toString();
+  if (!qs) return url;
+  return url + (url.includes('?') ? '&' : '?') + qs;
+}
+
 /** Validate required inputs. Returns the id of the first offending item, or null. */
 export function firstMissingRequired(popup: PopupModal, values: FormValues): string | null {
   for (const item of popup.contentItems) {

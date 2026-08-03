@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState, type CSSProperties } from 'react';
 import { designUsesImage, type ContentItem, type PopupModal, type StyleProps } from '@schema';
-import { firstInvalidEmail, firstMissingRequired, submitPopup, type FormValues, type SubmitOutcome } from './submit';
+import { appendValuesToUrl, firstInvalidEmail, firstMissingRequired, submitPopup, type FormValues, type SubmitOutcome } from './submit';
 import { ensureStyles } from './styles';
 
 export interface PopupContentProps {
@@ -77,9 +77,12 @@ export function PopupContent({ popup, onClose, fetchImpl, preview, onItemActivat
       return;
     }
     if (success.type === 'redirect') {
+      // Optionally carry the submitted values to the destination so it can
+      // personalize (e.g. a thank-you page greeting the visitor by name).
+      const url = success.forwardValues ? appendValuesToUrl(popup, values, success.url) : success.url;
       if (!preview) {
-        if (success.newTab) window.open(success.url, '_blank');
-        else window.location.assign(success.url);
+        if (success.newTab) window.open(url, '_blank');
+        else window.location.assign(url);
       }
       setPhase({ kind: 'success', outcome });
       return;
