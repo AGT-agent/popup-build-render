@@ -52,8 +52,17 @@ export function EditingView({ popup, onPublish }: { popup: PopupModal; onPublish
   const select = useBuilderStore((s) => s.select);
   const updatePopup = useBuilderStore((s) => s.updatePopup);
   const [tab, setTab] = useState<Tab>('setup');
+  // Set when a preview field is clicked: jump to the Layout tab and flash that
+  // item's editor. `nonce` bumps every click so re-clicking the same field
+  // re-triggers the animation.
+  const [focusItem, setFocusItem] = useState<{ id: string; nonce: number } | null>(null);
 
   const patch = (p: Partial<PopupModal>) => updatePopup(popup.id, p);
+
+  const revealItem = (id: string) => {
+    setTab('layout');
+    setFocusItem((prev) => ({ id, nonce: (prev?.nonce ?? 0) + 1 }));
+  };
 
   return (
     <div className="editing-view">
@@ -93,7 +102,7 @@ export function EditingView({ popup, onPublish }: { popup: PopupModal; onPublish
 
         <div className="tab-panel">
           {tab === 'setup' && <SettingsEditor popup={popup} onChange={patch} />}
-          {tab === 'layout' && <ContentItemsEditor popup={popup} onChange={patch} />}
+          {tab === 'layout' && <ContentItemsEditor popup={popup} onChange={patch} focusItem={focusItem} />}
           {tab === 'design' && <DesignEditor popup={popup} onChange={patch} />}
         </div>
       </div>
@@ -101,7 +110,7 @@ export function EditingView({ popup, onPublish }: { popup: PopupModal; onPublish
       {/* Big display on the right */}
       <div className="edit-display">
         <div className="display-preview">
-          <PreviewPane popup={popup} onPublish={onPublish} />
+          <PreviewPane popup={popup} onPublish={onPublish} onItemActivate={revealItem} />
         </div>
         <div className="btn-row" style={{ justifyContent: 'space-between', alignItems: 'center' }}>
           <p className="sub" style={{ fontSize: 12, color: 'var(--muted)', margin: 0 }}>

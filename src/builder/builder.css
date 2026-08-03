@@ -455,6 +455,31 @@ button:hover {
   border-color: color-mix(in srgb, var(--accent) 40%, var(--border));
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.06);
 }
+/* Flash played when a preview field is clicked, to point out its editor. */
+.item-card.field-flash {
+  animation: field-flash 1.1s ease-out;
+}
+@keyframes field-flash {
+  0% {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--accent) 55%, transparent);
+  }
+  30% {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 5px color-mix(in srgb, var(--accent) 28%, transparent);
+    transform: translateY(-1px);
+  }
+  100% {
+    border-color: var(--border);
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--accent) 0%, transparent);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .item-card.field-flash {
+    animation: none;
+    border-color: var(--accent);
+  }
+}
 .item-card .item-head {
   display: flex;
   align-items: center;

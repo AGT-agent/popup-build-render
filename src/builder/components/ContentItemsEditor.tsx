@@ -1,4 +1,4 @@
-import { useState, type JSX } from 'react';
+import { useEffect, useRef, useState, type JSX } from 'react';
 import {
   URL_TOKEN_HINT,
   isInputType,
@@ -17,12 +17,33 @@ import { useT, type Strings } from '../i18n';
 interface Props {
   popup: PopupModal;
   onChange: (patch: Partial<PopupModal>) => void;
+  /** Reveal request from the preview: scroll to this item's card and flash it. */
+  focusItem?: { id: string; nonce: number } | null;
 }
 
-export function ContentItemsEditor({ popup, onChange }: Props) {
+export function ContentItemsEditor({ popup, onChange, focusItem }: Props) {
   const t = useT();
   const [picking, setPicking] = useState(false);
+  const rootRef = useRef<HTMLDivElement>(null);
   const items = [...popup.contentItems].sort((a, b) => a.order - b.order);
+
+  // When the preview asks to reveal an item, leave the field picker (if open),
+  // then — after the list has rendered — scroll its card in and replay a flash.
+  useEffect(() => {
+    if (!focusItem) return;
+    setPicking(false);
+    const raf = requestAnimationFrame(() => {
+      const el = rootRef.current?.querySelector<HTMLElement>(
+        `[data-item-id="${CSS.escape(focusItem.id)}"]`,
+      );
+      if (!el) return;
+      el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      el.classList.remove('field-flash');
+      void el.offsetWidth; // force reflow so the animation restarts on re-click
+      el.classList.add('field-flash');
+    });
+    return () => cancelAnimationFrame(raf);
+  }, [focusItem?.nonce]);
 
   const commit = (next: ContentItem[]) => {
     // Submit buttons always sink to the bottom; everything else keeps its order.
@@ -58,7 +79,7 @@ export function ContentItemsEditor({ popup, onChange }: Props) {
   // The list and the field menu occupy the same spot; toggling `picking` swaps
   // them with a slide-in animation (see .field-menu / .layout-list in the CSS).
   return (
-    <div className="section layout-editor">
+    <div className="section layout-editor" ref={rootRef}>
       {picking ? (
         <FieldPicker
           key="menu"
@@ -107,7 +128,7 @@ function ItemCard({ item, index, count, onMove, onRemove, onUpdate }: ItemCardPr
   const input = isInputType(item.type);
 
   return (
-    <div className="item-card">
+    <div className="item-card" data-item-id={item.id}>
       <div className="item-head">
         <span className="item-type-chip">
           <span className="item-type-icon" aria-hidden="true">{ICONS[item.type]}</span>
