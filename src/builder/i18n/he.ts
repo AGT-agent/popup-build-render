@@ -109,7 +109,7 @@ export const he: Strings = {
     color: "צבע",
     backgroundColor: "צבע רקע",
     required: "חובה",
-    private: "פרטי",
+    private: "מוסתר",
     privateHint: "מוסתר מהפופאפ; הערך מגיע מכתובת העמוד.",
     submitKey: "מפתח שליחה",
     options: "אפשרויות",
