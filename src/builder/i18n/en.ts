@@ -86,6 +86,8 @@ export const en = {
     galleryComingSoon: 'Gallery coming soon',
     successMessage: 'Success message',
     redirectUrl: 'Redirect URL',
+    forwardValues: 'Forward form values to the URL',
+    forwardValuesHint: 'Adds the submitted fields as query params so the destination page can use them — e.g. greet the visitor by name.',
     couponIntro: 'Coupon intro text',
     staticCode: 'Static code',
     codeFromResponse: '…or code from response path',
@@ -103,12 +105,14 @@ export const en = {
     placeholder: 'Placeholder',
     checkboxLabel: 'Checkbox label',
     valueLabel: 'Value',
+    hiddenValue: 'Value to send',
     groupLabel: 'Group label',
     align: 'Align',
     color: 'Color',
     backgroundColor: 'Background color',
     required: 'Required',
-    submitTarget: 'Submit target',
+    private: 'Private',
+    privateHint: 'Hidden from the popup; value comes from the page URL.',
     submitKey: 'Submit key',
     options: 'Options',
     optionLabel: 'label',
@@ -144,6 +148,7 @@ export const en = {
       radio: 'Pick one — no pressure.',
       checkbox: "The classic 'yes, I'm in.'",
       'free-text-input': 'Let them say it their way.',
+      hidden: 'Sent with the form, never shown.',
       'submit-button': 'The big moment.',
     },
   },
@@ -162,8 +167,8 @@ export const en = {
   },
   // Human-readable labels for the schema enum values shown in dropdowns and the
   // add-section menu. The stored value stays the raw enum; only the label here
-  // is translated. GET/POST and the body/query request target are deliberately
-  // left raw (technical API identifiers), so they aren't listed.
+  // is translated. GET/POST is deliberately left raw (a technical API
+  // identifier), so it isn't listed.
   enums: {
     trigger: {
       immediate: 'Immediate',
@@ -196,6 +201,7 @@ export const en = {
       radio: 'Radio group',
       checkbox: 'Checkbox',
       'free-text-input': 'Text field',
+      hidden: 'Hidden field',
       'submit-button': 'Submit button',
     },
     align: {

@@ -22,6 +22,9 @@ export const POPUP_CSS = `
 .pm-layout.pm-image-right { flex-direction: row-reverse; }
 .pm-media { flex: 1 1 45%; min-height: 240px; background-size: cover; background-position: center; }
 .pm-body { flex: 1 1 55%; padding: 28px; display: flex; flex-direction: column; gap: 14px; }
+/* Builder preview only: hints that clicking a field reveals its editor. */
+.pm-body--interactive > [data-pm-item] { cursor: pointer; }
+.pm-body--interactive > .pm-field input { cursor: pointer; }
 .pm-image-behind .pm-body { position: relative; z-index: 1; color: #fff; }
 .pm-image-behind .pm-media {
   position: absolute; inset: 0; z-index: 0;

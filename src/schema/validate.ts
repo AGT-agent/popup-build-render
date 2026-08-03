@@ -45,11 +45,8 @@ function validateContentItem(item: ContentItem, index: number, issues: Validatio
     });
   }
 
-  if (isInputType(item.type)) {
+  if (isInputType(item.type) || item.type === 'hidden') {
     const req = item.onSubmitRequest;
-    if (req && req.target !== 'query' && req.target !== 'body') {
-      issues.push({ path: `${at}.onSubmitRequest.target`, message: 'target must be "query" or "body".', level: 'error' });
-    }
     // email defaults its key to "email"; every other input must declare one.
     if (item.type !== 'email' && req && !req.key) {
       issues.push({ path: `${at}.onSubmitRequest.key`, message: 'A submit key is required for this input.', level: 'warning' });

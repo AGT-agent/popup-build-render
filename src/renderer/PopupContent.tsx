@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState, type CSSProperties } from 'react';
 import { designUsesImage, type ContentItem, type PopupModal, type StyleProps } from '@schema';
-import { firstInvalidEmail, firstMissingRequired, submitPopup, type FormValues, type SubmitOutcome } from './submit';
+import { appendValuesToUrl, firstInvalidEmail, firstMissingRequired, submitPopup, type FormValues, type SubmitOutcome } from './submit';
 import { ensureStyles } from './styles';
 
 export interface PopupContentProps {
@@ -11,6 +11,11 @@ export interface PopupContentProps {
   fetchImpl?: typeof fetch;
   /** Preview mode: renders the form frame but blocks real navigation on redirect. */
   preview?: boolean;
+  /**
+   * Preview-only: fired with a content item's id when its rendered element is
+   * clicked, so the builder can reveal that item's editor. Ignored in production.
+   */
+  onItemActivate?: (id: string) => void;
 }
 
 // `forceAlign` overrides the item's own align: submit buttons are always
@@ -33,8 +38,30 @@ type Phase =
  * The pure "renderer" half: turns a PopupModal into DOM. Knows nothing about
  * triggers, frequency, or how it got mounted — that is the mount layer's job.
  */
-export function PopupContent({ popup, onClose, fetchImpl, preview }: PopupContentProps) {
-  const [values, setValues] = useState<FormValues>({});
+/** Submit key of an input — mirrors the request builder's key resolution. */
+function itemKey(item: ContentItem): string {
+  return item.onSubmitRequest?.key ?? (item.type === 'email' ? 'email' : item.id);
+}
+
+/**
+ * Seed private inputs from the page URL's query string (matched by submit key),
+ * so a value passed in the link — e.g. ?ref=abc — flows straight into the form.
+ */
+function seedPrivateValues(popup: PopupModal): FormValues {
+  if (typeof window === 'undefined') return {};
+  const params = new URLSearchParams(window.location.search);
+  const seed: FormValues = {};
+  for (const item of popup.contentItems) {
+    if (!item.private) continue;
+    const raw = params.get(itemKey(item));
+    if (raw === null) continue;
+    seed[item.id] = item.type === 'checkbox' ? raw === 'true' || raw === '1' : raw;
+  }
+  return seed;
+}
+
+export function PopupContent({ popup, onClose, fetchImpl, preview, onItemActivate }: PopupContentProps) {
+  const [values, setValues] = useState<FormValues>(() => seedPrivateValues(popup));
   const [phase, setPhase] = useState<Phase>({ kind: 'form' });
   const [submitting, setSubmitting] = useState(false);
 
@@ -72,9 +99,12 @@ export function PopupContent({ popup, onClose, fetchImpl, preview }: PopupConten
       return;
     }
     if (success.type === 'redirect') {
+      // Optionally carry the submitted values to the destination so it can
+      // personalize (e.g. a thank-you page greeting the visitor by name).
+      const url = success.forwardValues ? appendValuesToUrl(popup, values, success.url) : success.url;
       if (!preview) {
-        if (success.newTab) window.open(success.url, '_blank');
-        else window.location.assign(success.url);
+        if (success.newTab) window.open(url, '_blank');
+        else window.location.assign(url);
       }
       setPhase({ kind: 'success', outcome });
       return;
@@ -94,19 +124,24 @@ export function PopupContent({ popup, onClose, fetchImpl, preview }: PopupConten
   }, [phase, onClose]);
 
   function renderItem(item: ContentItem) {
+    // Private inputs are never shown; their value rides along from the URL.
+    if (item.private) return null;
     const style = toStyle(item.styleProps); // heading / text — respects global alignment
     const fieldStyle = toStyle(item.styleProps, 'start'); // input labels — left/right by direction
     const buttonStyle = toStyle(item.styleProps, 'center'); // submit button — always centered
     switch (item.type) {
       case 'heading':
-        return <h2 key={item.id} className="pm-heading" style={style}>{item.value}</h2>;
+        return <h2 key={item.id} data-pm-item={item.id} className="pm-heading" style={style}>{item.value}</h2>;
       case 'text':
-        return <p key={item.id} className="pm-text" style={style}>{item.value}</p>;
+        return <p key={item.id} data-pm-item={item.id} className="pm-text" style={style}>{item.value}</p>;
       case 'spacer':
-        return <div key={item.id} className="pm-spacer" style={{ height: item.height ?? 16 }} aria-hidden />;
+        return <div key={item.id} data-pm-item={item.id} className="pm-spacer" style={{ height: item.height ?? 16 }} aria-hidden />;
+      case 'hidden':
+        // Submitted with the form but never shown.
+        return null;
       case 'email':
         return (
-          <label key={item.id} className="pm-field" style={fieldStyle}>
+          <label key={item.id} data-pm-item={item.id} className="pm-field" style={fieldStyle}>
             {item.value && <span>{item.value}{item.required ? ' *' : ''}</span>}
             <input
               type="email"
@@ -118,7 +153,7 @@ export function PopupContent({ popup, onClose, fetchImpl, preview }: PopupConten
         );
       case 'free-text-input':
         return (
-          <label key={item.id} className="pm-field" style={fieldStyle}>
+          <label key={item.id} data-pm-item={item.id} className="pm-field" style={fieldStyle}>
             {item.value && <span>{item.value}{item.required ? ' *' : ''}</span>}
             <input
               type="text"
@@ -130,7 +165,7 @@ export function PopupContent({ popup, onClose, fetchImpl, preview }: PopupConten
         );
       case 'checkbox':
         return (
-          <label key={item.id} className="pm-checkbox" style={fieldStyle}>
+          <label key={item.id} data-pm-item={item.id} className="pm-checkbox" style={fieldStyle}>
             <input
               type="checkbox"
               checked={Boolean(values[item.id])}
@@ -141,7 +176,7 @@ export function PopupContent({ popup, onClose, fetchImpl, preview }: PopupConten
         );
       case 'radio':
         return (
-          <fieldset key={item.id} className="pm-field" style={{ ...fieldStyle, border: 'none', padding: 0, margin: 0 }}>
+          <fieldset key={item.id} data-pm-item={item.id} className="pm-field" style={{ ...fieldStyle, border: 'none', padding: 0, margin: 0 }}>
             {item.value && <span>{item.value}</span>}
             <div className="pm-radio-group">
               {(item.options ?? []).map((opt) => (
@@ -161,7 +196,7 @@ export function PopupContent({ popup, onClose, fetchImpl, preview }: PopupConten
         );
       case 'submit-button':
         return (
-          <button key={item.id} className="pm-submit" style={buttonStyle} disabled={submitting} onClick={handleSubmit}>
+          <button key={item.id} data-pm-item={item.id} className="pm-submit" style={buttonStyle} disabled={submitting} onClick={handleSubmit}>
             {submitting ? 'Submitting…' : item.value}
           </button>
         );
@@ -179,7 +214,25 @@ export function PopupContent({ popup, onClose, fetchImpl, preview }: PopupConten
     <div className="pm-media" style={{ backgroundImage: `url(${popup.imageUrl})` }} aria-hidden />
   ) : null;
 
-  const body = <div className="pm-body">{renderPhaseBody(phase, items, renderItem, onClose)}</div>;
+  const body = (
+    <div
+      className={`pm-body${onItemActivate ? ' pm-body--interactive' : ''}`}
+      // Preview-only: surface which content item was clicked so the builder can
+      // reveal its editor. Capture phase so it fires even for inputs/buttons
+      // without swallowing their own click behaviour.
+      onClickCapture={
+        onItemActivate
+          ? (e) => {
+              const el = (e.target as HTMLElement).closest<HTMLElement>('[data-pm-item]');
+              const id = el?.getAttribute('data-pm-item');
+              if (id) onItemActivate(id);
+            }
+          : undefined
+      }
+    >
+      {renderPhaseBody(phase, items, renderItem, onClose)}
+    </div>
+  );
 
   return (
     <div

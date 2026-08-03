@@ -21,6 +21,9 @@ function resolveItemValue(item: ContentItem, values: FormValues): string | boole
     case 'free-text-input':
     case 'radio':
       return raw === undefined ? '' : String(raw);
+    case 'hidden':
+      // Not user-editable: the value comes from the item, not the form state.
+      return item.value ?? '';
     default:
       return undefined;
   }
@@ -58,9 +61,9 @@ export function assembleRequest(popup: PopupModal, values: FormValues): Assemble
     const value = resolveItemValue(item, values);
     if (value === undefined) continue;
     const key = defaultKey(item);
-    const target = item.onSubmitRequest.target ?? 'body';
 
-    if (target === 'query' || popup.method === 'GET') {
+    // Placement follows the HTTP method: GET → query string, POST → body.
+    if (popup.method === 'GET') {
       query[key] = String(value);
     } else {
       bodyObj[key] = value;
@@ -84,6 +87,25 @@ export function assembleRequest(popup: PopupModal, values: FormValues): Assemble
     req.body = JSON.stringify(bodyObj);
   }
   return req;
+}
+
+/**
+ * Append the submitted field values to a URL as query params, keyed by each
+ * field's submit key. Used on redirect success so the destination page (e.g. a
+ * thank-you page) can read them — greet the visitor by name, and so on. Existing
+ * query params on the URL are preserved; empty fields are skipped.
+ */
+export function appendValuesToUrl(popup: PopupModal, values: FormValues, url: string): string {
+  const params = new URLSearchParams();
+  for (const item of popup.contentItems) {
+    if (!item.onSubmitRequest) continue;
+    const value = resolveItemValue(item, values);
+    if (value === undefined || value === '') continue;
+    params.set(defaultKey(item), String(value));
+  }
+  const qs = params.toString();
+  if (!qs) return url;
+  return url + (url.includes('?') ? '&' : '?') + qs;
 }
 
 /** Validate required inputs. Returns the id of the first offending item, or null. */

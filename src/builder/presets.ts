@@ -43,7 +43,7 @@ const email = (): ContentItem => ({
   type: 'email',
   value: 'Your email',
   required: true,
-  onSubmitRequest: { target: 'body', key: 'email' },
+  onSubmitRequest: { key: 'email' },
 });
 
 const submit = (value: string, onImage = true): ContentItem => ({
@@ -111,7 +111,7 @@ export const PRESETS: Preset[] = [
           order: 3,
           type: 'checkbox',
           value: 'Email me deals',
-          onSubmitRequest: { target: 'body', key: 'marketingOptIn' },
+          onSubmitRequest: { key: 'marketingOptIn' },
         },
         submit('Claim my discount', false),
       ],
@@ -162,7 +162,7 @@ export const PRESETS: Preset[] = [
           order: 2,
           type: 'free-text-input',
           value: 'Your feedback',
-          onSubmitRequest: { target: 'body', key: 'feedback' },
+          onSubmitRequest: { key: 'feedback' },
         },
         submit('Send feedback', false),
       ],

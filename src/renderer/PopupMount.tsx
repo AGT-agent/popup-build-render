@@ -12,6 +12,8 @@ export interface PopupMountProps {
   /** Force-open immediately, bypassing the trigger (builder preview uses this). */
   forceOpen?: boolean;
   onClose?: () => void;
+  /** Preview-only: fired with a content item's id when its element is clicked. */
+  onItemActivate?: (id: string) => void;
 }
 
 /**
@@ -19,7 +21,7 @@ export interface PopupMountProps {
  * frequency), handles dismiss affordances (overlay click, esc), and places it
  * as a full-page overlay or inline. Delegates all rendering to PopupContent.
  */
-export function PopupMount({ popup, fetchImpl, preview, forceOpen, onClose }: PopupMountProps) {
+export function PopupMount({ popup, fetchImpl, preview, forceOpen, onClose, onItemActivate }: PopupMountProps) {
   const [allowed] = useState(() => preview || forceOpen || canOpen(popup));
   const triggered = useTrigger(popup.trigger, allowed && !forceOpen);
   const shouldOpen = allowed && (forceOpen || triggered);
@@ -54,7 +56,7 @@ export function PopupMount({ popup, fetchImpl, preview, forceOpen, onClose }: Po
 
   if (!open) return null;
 
-  const content = <PopupContent popup={popup} onClose={close} fetchImpl={fetchImpl} preview={preview} />;
+  const content = <PopupContent popup={popup} onClose={close} fetchImpl={fetchImpl} preview={preview} onItemActivate={onItemActivate} />;
 
   // Always a full-page overlay modal. `htmlId` only gates whether the popup
   // mounts at all (handled in mountPopup); it does not change placement.

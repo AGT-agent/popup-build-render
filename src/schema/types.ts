@@ -38,9 +38,8 @@ export type ContentType =
   | 'radio'
   | 'checkbox'
   | 'free-text-input'
+  | 'hidden'
   | 'submit-button';
-
-export type RequestTarget = 'query' | 'body';
 
 export interface StyleProps {
   align?: 'left' | 'center' | 'right';
@@ -53,8 +52,12 @@ export interface PopupOption {
   value: string;
 }
 
+/**
+ * Where a field's value lands is derived from the popup's HTTP method, not
+ * configured per field: GET → query string, POST → JSON body. Only the key
+ * (the parameter name) is authored.
+ */
 export interface OnSubmitRequest {
-  target: RequestTarget;
   key?: string;
 }
 
@@ -68,12 +71,19 @@ export interface ContentItem {
   id: string;
   order: number;
   type: ContentType;
-  value?: string;
+  value?: string; // for `hidden`, this is the fixed value submitted with the form
   placeholder?: string; // email / free-text-input only — input placeholder, independent of the label
   height?: number; // spacer only — vertical gap in px
   styleProps?: StyleProps;
   options?: PopupOption[];
   required?: boolean;
+  /**
+   * Inputs only. A private input is never shown in the rendered popup — its
+   * value is seeded from the page URL's query string (matched by submit key),
+   * so it's handy for carrying a ref/tracking code through the form. In the
+   * builder it still appears, dimmed, so authors can see and configure it.
+   */
+  private?: boolean;
   onSubmitRequest?: OnSubmitRequest;
 }
 
@@ -124,7 +134,17 @@ export type SubmitSuccess =
       codeFromResponsePath?: string;
       copyable?: boolean;
     }
-  | { type: 'redirect'; url: string; newTab?: boolean };
+  | {
+      type: 'redirect';
+      url: string;
+      newTab?: boolean;
+      /**
+       * When true, the submitted field values are appended to the redirect URL
+       * as query params (keyed by each field's submit key), so the destination
+       * page can personalize — e.g. greet the visitor by name on a thank-you page.
+       */
+      forwardValues?: boolean;
+    };
 
 export type SubmitError = { type: 'message'; text: string };
 
@@ -150,7 +170,11 @@ export interface PopupModal {
   contentItems: ContentItem[];
 }
 
-/** Content types that collect a value and contribute to the submit request. */
+/**
+ * Content types that collect a value *from the visitor*. `hidden` also
+ * contributes to the submit request but carries a fixed, author-set value with
+ * no visible input, so it is intentionally not listed here.
+ */
 export const INPUT_TYPES: ContentType[] = ['email', 'radio', 'checkbox', 'free-text-input'];
 
 export const CONTENT_TYPES: ContentType[] = [
@@ -161,6 +185,7 @@ export const CONTENT_TYPES: ContentType[] = [
   'radio',
   'checkbox',
   'free-text-input',
+  'hidden',
   'submit-button',
 ];
 

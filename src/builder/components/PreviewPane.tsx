@@ -15,9 +15,12 @@ function makeMockFetch(): typeof fetch {
 export function PreviewPane({
   popup,
   onPublish,
+  onItemActivate,
 }: {
   popup: PopupModal;
   onPublish?: (popup: PopupModal) => void;
+  /** Clicking a rendered field asks the builder to reveal its editor. */
+  onItemActivate?: (id: string) => void;
 }) {
   const t = useT();
   const [replayKey, setReplayKey] = useState(0);
@@ -43,6 +46,7 @@ export function PreviewPane({
           preview
           fetchImpl={mockFetch}
           onClose={replay}
+          onItemActivate={onItemActivate}
         />
       </div>
     </div>
