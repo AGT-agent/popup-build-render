@@ -24,19 +24,19 @@ export function makeContentItem(type: ContentType, order: number): ContentItem {
         ...base,
         value: 'Your email',
         required: true,
-        onSubmitRequest: { target: 'body', key: 'email' },
+        onSubmitRequest: { key: 'email' },
       };
     case 'free-text-input':
       return {
         ...base,
         value: 'Your answer',
-        onSubmitRequest: { target: 'body', key: 'field' },
+        onSubmitRequest: { key: 'field' },
       };
     case 'checkbox':
       return {
         ...base,
         value: 'I agree',
-        onSubmitRequest: { target: 'body', key: 'optIn' },
+        onSubmitRequest: { key: 'optIn' },
       };
     case 'radio':
       return {
@@ -46,7 +46,7 @@ export function makeContentItem(type: ContentType, order: number): ContentItem {
           { label: 'Option A', value: 'a' },
           { label: 'Option B', value: 'b' },
         ],
-        onSubmitRequest: { target: 'body', key: 'choice' },
+        onSubmitRequest: { key: 'choice' },
       };
     case 'submit-button':
       return { ...base, value: 'Submit' };
@@ -69,7 +69,7 @@ export function makeContentItemFromField(field: CustomFieldDef, order: number): 
     value: field.label,
     required: field.required ?? base.required,
     options: field.type === 'radio' ? (field.options ?? base.options) : base.options,
-    onSubmitRequest: { target: base.onSubmitRequest?.target ?? 'body', key: field.key },
+    onSubmitRequest: { key: field.key },
   };
 }
 
@@ -113,7 +113,7 @@ export function makePopup(name = 'Untitled popup', direction?: PopupDirection): 
         type: 'email',
         value: 'Your email',
         required: true,
-        onSubmitRequest: { target: 'body', key: 'email' },
+        onSubmitRequest: { key: 'email' },
       },
       {
         id: makeId('submit-button'),
@@ -174,14 +174,14 @@ export function makeExamplePopup(direction?: PopupDirection): PopupModal {
         type: 'email',
         value: 'Your email',
         required: true,
-        onSubmitRequest: { target: 'body', key: 'email' },
+        onSubmitRequest: { key: 'email' },
       },
       {
         id: makeId('c'),
         order: 3,
         type: 'checkbox',
         value: 'Email me deals',
-        onSubmitRequest: { target: 'body', key: 'marketingOptIn' },
+        onSubmitRequest: { key: 'marketingOptIn' },
       },
       {
         id: makeId('btn'),

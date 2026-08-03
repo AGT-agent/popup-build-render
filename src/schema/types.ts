@@ -40,8 +40,6 @@ export type ContentType =
   | 'free-text-input'
   | 'submit-button';
 
-export type RequestTarget = 'query' | 'body';
-
 export interface StyleProps {
   align?: 'left' | 'center' | 'right';
   color?: string;
@@ -53,8 +51,12 @@ export interface PopupOption {
   value: string;
 }
 
+/**
+ * Where a field's value lands is derived from the popup's HTTP method, not
+ * configured per field: GET → query string, POST → JSON body. Only the key
+ * (the parameter name) is authored.
+ */
 export interface OnSubmitRequest {
-  target: RequestTarget;
   key?: string;
 }
 

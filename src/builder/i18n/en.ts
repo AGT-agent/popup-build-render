@@ -108,7 +108,6 @@ export const en = {
     color: 'Color',
     backgroundColor: 'Background color',
     required: 'Required',
-    submitTarget: 'Submit target',
     submitKey: 'Submit key',
     options: 'Options',
     optionLabel: 'label',
@@ -162,8 +161,8 @@ export const en = {
   },
   // Human-readable labels for the schema enum values shown in dropdowns and the
   // add-section menu. The stored value stays the raw enum; only the label here
-  // is translated. GET/POST and the body/query request target are deliberately
-  // left raw (technical API identifiers), so they aren't listed.
+  // is translated. GET/POST is deliberately left raw (a technical API
+  // identifier), so it isn't listed.
   enums: {
     trigger: {
       immediate: 'Immediate',

@@ -106,7 +106,6 @@ export const he: Strings = {
     color: "צבע",
     backgroundColor: "צבע רקע",
     required: "חובה",
-    submitTarget: "יעד שליחה",
     submitKey: "מפתח שליחה",
     options: "אפשרויות",
     optionLabel: "תווית",

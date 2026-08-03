@@ -58,9 +58,9 @@ export function assembleRequest(popup: PopupModal, values: FormValues): Assemble
     const value = resolveItemValue(item, values);
     if (value === undefined) continue;
     const key = defaultKey(item);
-    const target = item.onSubmitRequest.target ?? 'body';
 
-    if (target === 'query' || popup.method === 'GET') {
+    // Placement follows the HTTP method: GET → query string, POST → body.
+    if (popup.method === 'GET') {
       query[key] = String(value);
     } else {
       bodyObj[key] = value;
