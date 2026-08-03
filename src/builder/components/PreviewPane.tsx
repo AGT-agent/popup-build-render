@@ -12,18 +12,29 @@ function makeMockFetch(): typeof fetch {
     })) as typeof fetch;
 }
 
-export function PreviewPane({ popup }: { popup: PopupModal }) {
+export function PreviewPane({
+  popup,
+  onPublish,
+}: {
+  popup: PopupModal;
+  onPublish?: (popup: PopupModal) => void;
+}) {
   const t = useT();
   const [replayKey, setReplayKey] = useState(0);
   const mockFetch = useMemo(makeMockFetch, []);
+  const replay = () => setReplayKey((k) => k + 1);
 
   return (
     <div className="preview-wrap">
-      <div className="toolbar" style={{ marginBottom: 8 }}>
-        <span className="pill">{t.preview.livePreview}</span>
-        <button onClick={() => setReplayKey((k) => k + 1)}>{t.preview.replay}</button>
-      </div>
+      {onPublish && (
+        <div className="toolbar preview-toolbar">
+          <button className="primary" onClick={() => onPublish(popup)}>{t.preview.publish}</button>
+        </div>
+      )}
       <div className="preview-frame">
+        {/* Replay floats over the preview; it re-mounts the popup to its initial
+            state after you close or submit it. */}
+        <button className="preview-replay" onClick={replay}>{t.preview.replay}</button>
         {/* forceOpen bypasses trigger + frequency; preview blocks real navigation. */}
         <PopupMount
           key={`${popup.id}-${replayKey}`}
@@ -31,7 +42,7 @@ export function PreviewPane({ popup }: { popup: PopupModal }) {
           forceOpen
           preview
           fetchImpl={mockFetch}
-          onClose={() => setReplayKey((k) => k + 1)}
+          onClose={replay}
         />
       </div>
     </div>

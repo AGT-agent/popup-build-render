@@ -47,7 +47,7 @@ const TABS: { id: Tab; labelKey: keyof Strings['edit']; icon: JSX.Element }[] = 
   },
 ];
 
-export function EditingView({ popup }: { popup: PopupModal }) {
+export function EditingView({ popup, onPublish }: { popup: PopupModal; onPublish?: (popup: PopupModal) => void }) {
   const t = useT();
   const select = useBuilderStore((s) => s.select);
   const updatePopup = useBuilderStore((s) => s.updatePopup);
@@ -75,11 +75,21 @@ export function EditingView({ popup }: { popup: PopupModal }) {
           ))}
         </div>
 
-        <input
-          className="name-input"
-          value={popup.name}
-          onChange={(e) => patch({ name: e.target.value })}
-        />
+        <div className="name-field">
+          <input
+            className="name-input"
+            value={popup.name}
+            onChange={(e) => patch({ name: e.target.value })}
+            aria-label={t.edit.nameLabel}
+            placeholder={t.edit.nameLabel}
+          />
+          <span className="name-pencil" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M12 20h9" />
+              <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z" />
+            </svg>
+          </span>
+        </div>
 
         <div className="tab-panel">
           {tab === 'setup' && <SettingsEditor popup={popup} onChange={patch} />}
@@ -91,7 +101,7 @@ export function EditingView({ popup }: { popup: PopupModal }) {
       {/* Big display on the right */}
       <div className="edit-display">
         <div className="display-preview">
-          <PreviewPane popup={popup} />
+          <PreviewPane popup={popup} onPublish={onPublish} />
         </div>
         <div className="btn-row" style={{ justifyContent: 'space-between', alignItems: 'center' }}>
           <p className="sub" style={{ fontSize: 12, color: 'var(--muted)', margin: 0 }}>

@@ -17,6 +17,14 @@ export type PopupDesign = 'basic' | 'image-behind' | 'image-right' | 'image-left
 export type PopupFrequency = 'session' | 'day' | 'ever' | 'always';
 
 /**
+ * How the popup is placed. `modal` is the default centered overlay; `inline`
+ * marks it to be embedded into the page flow by the host (no overlay). The
+ * bundled renderer currently always draws a modal — `inline` is a flag the
+ * host reads to place the form itself.
+ */
+export type PopupPlacement = 'modal' | 'inline';
+
+/**
  * Text direction of the rendered popup. Independent of the builder UI language —
  * a merchant running an English builder can still author a right-to-left popup.
  */
@@ -69,6 +77,43 @@ export interface ContentItem {
   onSubmitRequest?: OnSubmitRequest;
 }
 
+// ---------------------------------------------------------------------------
+// Custom fields — host-supplied inputs.
+//
+// A SaaS embedding the builder passes its own backend fields in via config, and
+// the "create new field" flow lets an author add one on the fly: the builder
+// hands the draft to the host (`onCreateField`), the host persists it and
+// returns the finalized def (with a real, validated `key`), and it becomes a
+// pickable field. Custom fields map onto the input `ContentType`s below.
+// ---------------------------------------------------------------------------
+
+/** The input kinds a host can expose as a custom field. */
+export type CustomFieldType = 'text' | 'email' | 'radio' | 'checkbox';
+
+/** What the author fills in the "create new field" form, before the host finalizes it. */
+export interface CustomFieldDraft {
+  label: string;
+  type: CustomFieldType;
+  options?: PopupOption[]; // radio only
+  required?: boolean;
+}
+
+/**
+ * A finalized custom field. The host owns `key` — it lands verbatim in the
+ * submit request, so the host assigns and validates it (URL-safe). `description`
+ * is optional microcopy shown under the field in the picker.
+ */
+export interface CustomFieldDef extends CustomFieldDraft {
+  key: string;
+  id?: string;
+  description?: string;
+}
+
+/** The `ContentType` a custom field renders as. `text` is our free-text input. */
+export function customFieldContentType(type: CustomFieldType): ContentType {
+  return type === 'text' ? 'free-text-input' : type;
+}
+
 export type SubmitSuccess =
   | { type: 'close' }
   | { type: 'message'; text: string; autoCloseMs?: number }
@@ -90,6 +135,8 @@ export interface PopupModal {
   method: 'GET' | 'POST';
   trigger: PopupTrigger;
   design: PopupDesign;
+  /** Overlay modal vs. host-embedded inline. Defaults to 'modal' when omitted. */
+  placement?: PopupPlacement;
   /** Text direction of the popup itself. Defaults to 'ltr' when omitted. */
   direction?: PopupDirection;
   borderRadius?: number;
@@ -122,6 +169,8 @@ export const DESIGNS: PopupDesign[] = ['basic', 'image-behind', 'image-right', '
 export const FREQUENCIES: PopupFrequency[] = ['always', 'session', 'day', 'ever'];
 
 export const DIRECTIONS: PopupDirection[] = ['ltr', 'rtl'];
+
+export const PLACEMENTS: PopupPlacement[] = ['modal', 'inline'];
 
 export function isInputType(type: ContentType): boolean {
   return INPUT_TYPES.includes(type);

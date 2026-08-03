@@ -13,9 +13,12 @@ export interface PopupContentProps {
   preview?: boolean;
 }
 
-function toStyle(sp?: StyleProps): CSSProperties {
+// `forceAlign` overrides the item's own align: submit buttons are always
+// centered, and input labels always sit at the reading-direction start
+// (left in LTR, right in RTL) — never centered.
+function toStyle(sp?: StyleProps, forceAlign?: CSSProperties['textAlign']): CSSProperties {
   return {
-    textAlign: sp?.align ?? 'center',
+    textAlign: forceAlign ?? sp?.align ?? 'center',
     ...(sp?.color ? { color: sp.color } : {}),
     ...(sp?.backgroundColor ? { backgroundColor: sp.backgroundColor } : {}),
   };
@@ -91,7 +94,9 @@ export function PopupContent({ popup, onClose, fetchImpl, preview }: PopupConten
   }, [phase, onClose]);
 
   function renderItem(item: ContentItem) {
-    const style = toStyle(item.styleProps);
+    const style = toStyle(item.styleProps); // heading / text — respects global alignment
+    const fieldStyle = toStyle(item.styleProps, 'start'); // input labels — left/right by direction
+    const buttonStyle = toStyle(item.styleProps, 'center'); // submit button — always centered
     switch (item.type) {
       case 'heading':
         return <h2 key={item.id} className="pm-heading" style={style}>{item.value}</h2>;
@@ -101,7 +106,7 @@ export function PopupContent({ popup, onClose, fetchImpl, preview }: PopupConten
         return <div key={item.id} className="pm-spacer" style={{ height: item.height ?? 16 }} aria-hidden />;
       case 'email':
         return (
-          <label key={item.id} className="pm-field" style={style}>
+          <label key={item.id} className="pm-field" style={fieldStyle}>
             {item.value && <span>{item.value}{item.required ? ' *' : ''}</span>}
             <input
               type="email"
@@ -113,7 +118,7 @@ export function PopupContent({ popup, onClose, fetchImpl, preview }: PopupConten
         );
       case 'free-text-input':
         return (
-          <label key={item.id} className="pm-field" style={style}>
+          <label key={item.id} className="pm-field" style={fieldStyle}>
             {item.value && <span>{item.value}{item.required ? ' *' : ''}</span>}
             <input
               type="text"
@@ -125,7 +130,7 @@ export function PopupContent({ popup, onClose, fetchImpl, preview }: PopupConten
         );
       case 'checkbox':
         return (
-          <label key={item.id} className="pm-checkbox" style={style}>
+          <label key={item.id} className="pm-checkbox" style={fieldStyle}>
             <input
               type="checkbox"
               checked={Boolean(values[item.id])}
@@ -136,7 +141,7 @@ export function PopupContent({ popup, onClose, fetchImpl, preview }: PopupConten
         );
       case 'radio':
         return (
-          <fieldset key={item.id} className="pm-field" style={{ ...style, border: 'none', padding: 0, margin: 0 }}>
+          <fieldset key={item.id} className="pm-field" style={{ ...fieldStyle, border: 'none', padding: 0, margin: 0 }}>
             {item.value && <span>{item.value}</span>}
             <div className="pm-radio-group">
               {(item.options ?? []).map((opt) => (
@@ -156,7 +161,7 @@ export function PopupContent({ popup, onClose, fetchImpl, preview }: PopupConten
         );
       case 'submit-button':
         return (
-          <button key={item.id} className="pm-submit" style={style} disabled={submitting} onClick={handleSubmit}>
+          <button key={item.id} className="pm-submit" style={buttonStyle} disabled={submitting} onClick={handleSubmit}>
             {submitting ? 'Submitting…' : item.value}
           </button>
         );

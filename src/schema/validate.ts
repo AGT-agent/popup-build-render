@@ -2,6 +2,7 @@ import {
   CONTENT_TYPES,
   DESIGNS,
   FREQUENCIES,
+  PLACEMENTS,
   designUsesImage,
   isInputType,
   isUrlSafeToken,
@@ -89,6 +90,9 @@ export function validatePopup(popup: PopupModal): ValidationIssue[] {
   }
   if (popup.frequency && !FREQUENCIES.includes(popup.frequency)) {
     issues.push({ path: 'frequency', message: `Unknown frequency "${popup.frequency}".`, level: 'error' });
+  }
+  if (popup.placement && !PLACEMENTS.includes(popup.placement)) {
+    issues.push({ path: 'placement', message: `Unknown placement "${popup.placement}".`, level: 'error' });
   }
 
   // Custom submit callback values become request keys too — enforce the same URL-safe rule.

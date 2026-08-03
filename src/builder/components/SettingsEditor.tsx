@@ -1,18 +1,28 @@
 import {
   DESIGNS,
   FREQUENCIES,
+  PLACEMENTS,
   URL_TOKEN_HINT,
   designUsesImage,
   isUrlSafeToken,
   type CallbackPayloadEntry,
+  type ContentType,
   type PopupDesign,
   type PopupDirection,
   type PopupFrequency,
   type PopupModal,
+  type PopupPlacement,
   type PopupTrigger,
+  type StyleProps,
   type SubmitSuccess,
 } from '@schema';
+import { AlignToolbar, ColorField, type Align } from './StyleControls';
 import { useT } from '../i18n';
+
+// Global alignment governs the display copy only. Submit buttons are always
+// centered and input labels always follow the reading direction (left/right) —
+// both enforced by the renderer — so neither is listed here.
+const ALIGNABLE: ContentType[] = ['heading', 'text'];
 
 interface Props {
   popup: PopupModal;
@@ -39,11 +49,21 @@ export function SettingsEditor({ popup, onChange }: Props) {
       <div className="section">
         <h3>{t.settings.deliveryHeading}</h3>
 
+        <div className="field-row">
+          <label>{t.settings.placement}</label>
+          <select
+            value={popup.placement ?? 'modal'}
+            onChange={(e) => onChange({ placement: e.target.value as PopupPlacement })}
+          >
+            {PLACEMENTS.map((p) => <option key={p} value={p}>{t.enums.placement[p]}</option>)}
+          </select>
+        </div>
+
         <div className="field-grid">
           <div className="field-row">
             <label>{t.settings.trigger}</label>
             <select value={popup.trigger.type} onChange={(e) => setTrigger(e.target.value as PopupTrigger['type'])}>
-              {TRIGGER_TYPES.map((t) => <option key={t} value={t}>{t}</option>)}
+              {TRIGGER_TYPES.map((type) => <option key={type} value={type}>{t.enums.trigger[type]}</option>)}
             </select>
           </div>
 
@@ -76,7 +96,7 @@ export function SettingsEditor({ popup, onChange }: Props) {
               value={popup.frequency ?? 'always'}
               onChange={(e) => onChange({ frequency: e.target.value as PopupFrequency })}
             >
-              {FREQUENCIES.map((f) => <option key={f} value={f}>{f}</option>)}
+              {FREQUENCIES.map((f) => <option key={f} value={f}>{t.enums.frequency[f]}</option>)}
             </select>
           </div>
           <div className="field-row inline" style={{ alignItems: 'center', marginTop: 22 }}>
@@ -105,7 +125,7 @@ export function SettingsEditor({ popup, onChange }: Props) {
       <div className="section">
         <h3>{t.settings.submissionHeading}</h3>
         <div className="field-grid">
-          <div className="field-row">
+          <div className="field-row span-all">
             <label>{t.settings.endpointUrl}</label>
             <input type="url" value={popup.url} onChange={(e) => onChange({ url: e.target.value })} />
           </div>
@@ -124,7 +144,7 @@ export function SettingsEditor({ popup, onChange }: Props) {
             value={popup.onSuccess?.type ?? 'close'}
             onChange={(e) => onChange({ onSuccess: buildSuccess(e.target.value as SubmitSuccess['type'], popup.onSuccess) })}
           >
-            {SUCCESS_TYPES.map((t) => <option key={t} value={t}>{t}</option>)}
+            {SUCCESS_TYPES.map((type) => <option key={type} value={type}>{t.enums.success[type]}</option>)}
           </select>
         </div>
         <SuccessFields success={popup.onSuccess} onChange={(s) => onChange({ onSuccess: s })} />
@@ -150,6 +170,21 @@ export function SettingsEditor({ popup, onChange }: Props) {
 /** Layout / appearance — the "Design" tab. */
 export function DesignEditor({ popup, onChange }: Props) {
   const t = useT();
+
+  // Global style controls write styleProps across every matching content item,
+  // so one swatch themes them all (the renderer reads per-item styleProps).
+  const setStyle = (types: ContentType[], patch: Partial<StyleProps>) => {
+    onChange({
+      contentItems: popup.contentItems.map((it) =>
+        types.includes(it.type) ? { ...it, styleProps: pruneStyle({ ...it.styleProps, ...patch }) } : it,
+      ),
+    });
+  };
+  // Read a representative value back for the swatch/toolbar: the first matching
+  // item that has one set.
+  const styleOf = <K extends keyof StyleProps>(types: ContentType[], key: K): StyleProps[K] | undefined =>
+    popup.contentItems.find((it) => types.includes(it.type) && it.styleProps?.[key] != null)?.styleProps?.[key];
+
   return (
     <div className="section">
       <h3>{t.settings.designHeading}</h3>
@@ -157,7 +192,7 @@ export function DesignEditor({ popup, onChange }: Props) {
         <div className="field-row">
           <label>{t.settings.layout}</label>
           <select value={popup.design} onChange={(e) => onChange({ design: e.target.value as PopupDesign })}>
-            {DESIGNS.map((d) => <option key={d} value={d}>{d}</option>)}
+            {DESIGNS.map((d) => <option key={d} value={d}>{t.enums.design[d]}</option>)}
           </select>
         </div>
         <div className="field-row">
@@ -187,14 +222,70 @@ export function DesignEditor({ popup, onChange }: Props) {
             <label>{t.settings.imageUrl}</label>
             <input
               type="url"
+              placeholder="https://www.filin.co.il/"
               value={popup.imageUrl ?? ''}
               onChange={(e) => onChange({ imageUrl: e.target.value || undefined })}
             />
+            <span className="coming-soon-chip">{t.settings.galleryComingSoon}</span>
           </div>
         )}
       </div>
+
+      {/* --- Global colours & alignment (was per-field) --- */}
+      <h3 className="section-subhead">{t.settings.colorsHeading}</h3>
+      <div className="field-grid">
+        <div className="field-row">
+          <label>{t.settings.headingColor}</label>
+          <ColorField
+            value={styleOf(['heading'], 'color')}
+            placeholder="#111827"
+            onChange={(color) => setStyle(['heading'], { color })}
+          />
+        </div>
+        <div className="field-row">
+          <label>{t.settings.bodyTextColor}</label>
+          <ColorField
+            value={styleOf(['text'], 'color')}
+            placeholder="#111827"
+            onChange={(color) => setStyle(['text'], { color })}
+          />
+        </div>
+        <div className="field-row">
+          <label>{t.settings.buttonColor}</label>
+          <ColorField
+            value={styleOf(['submit-button'], 'color')}
+            placeholder="#ffffff"
+            onChange={(color) => setStyle(['submit-button'], { color })}
+          />
+        </div>
+        <div className="field-row">
+          <label>{t.settings.buttonBackground}</label>
+          <ColorField
+            value={styleOf(['submit-button'], 'backgroundColor')}
+            placeholder="#3ab364"
+            onChange={(backgroundColor) => setStyle(['submit-button'], { backgroundColor })}
+          />
+        </div>
+        <div className="field-row span-all">
+          <label>{t.settings.alignment}</label>
+          <AlignToolbar
+            value={(styleOf(ALIGNABLE, 'align') ?? 'center') as Align}
+            onChange={(align) => setStyle(ALIGNABLE, { align })}
+          />
+        </div>
+      </div>
     </div>
   );
+}
+
+// Drop keys set back to undefined so cleared colours don't linger as empty
+// styleProps in the exported JSON.
+function pruneStyle(style: StyleProps): StyleProps | undefined {
+  const next: StyleProps = {};
+  if (style.align != null) next.align = style.align;
+  if (style.color != null) next.color = style.color;
+  if (style.backgroundColor != null) next.backgroundColor = style.backgroundColor;
+  return Object.keys(next).length ? next : undefined;
 }
 
 // Currently hidden from the builder UI (see ContactEditor) but kept for
