@@ -127,11 +127,12 @@ function ItemCard({ item, index, count, onMove, onRemove, onUpdate }: ItemCardPr
   const input = isInputType(item.type);
 
   return (
-    <div className="item-card" data-item-id={item.id}>
+    <div className={`item-card${item.private ? ' private' : ''}`} data-item-id={item.id}>
       <div className="item-head">
         <span className="item-type-chip">
           <span className="item-type-icon" aria-hidden="true">{ICONS[item.type]}</span>
           {t.enums.content[item.type]}
+          {item.private && <span className="item-private-icon" title={t.content.private} aria-label={t.content.private}>{EYE_OFF}</span>}
         </span>
         <div className="item-order-btns">
           {item.type !== 'submit-button' && (
@@ -194,6 +195,16 @@ function ItemCard({ item, index, count, onMove, onRemove, onUpdate }: ItemCardPr
               onChange={(e) => onUpdate(item.id, { required: e.target.checked })}
             />
             <label htmlFor={`req-${item.id}`} style={{ margin: 0 }}>{t.content.required}</label>
+          </div>
+          <div className="field-row inline">
+            <input
+              type="checkbox"
+              id={`prv-${item.id}`}
+              checked={Boolean(item.private)}
+              onChange={(e) => onUpdate(item.id, { private: e.target.checked || undefined })}
+            />
+            <label htmlFor={`prv-${item.id}`} style={{ margin: 0 }}>{t.content.private}</label>
+            <span className="field-hint">{t.content.privateHint}</span>
           </div>
           <div className="field-row">
             <label>{t.content.submitKey}</label>
@@ -293,3 +304,11 @@ const icon = (children: JSX.Element) => (
 const ARROW_UP = icon(<><path d="M12 19V5M5 12l7-7 7 7" /></>);
 const ARROW_DOWN = icon(<><path d="M12 5v14M19 12l-7 7-7-7" /></>);
 const TRASH = icon(<><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6" /></>);
+// Eye-off — marks a field that's present but hidden from the rendered popup.
+const EYE_OFF = icon(
+  <>
+    <path d="M9.9 4.24A9.1 9.1 0 0 1 12 4c7 0 10 8 10 8a13.2 13.2 0 0 1-1.67 2.68M6.6 6.6A13.3 13.3 0 0 0 2 12s3 8 10 8a9.1 9.1 0 0 0 5.4-1.6" />
+    <path d="M9.9 9.9a3 3 0 0 0 4.2 4.2" />
+    <path d="m2 2 20 20" />
+  </>,
+);

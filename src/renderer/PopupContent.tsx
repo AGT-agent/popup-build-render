@@ -38,8 +38,30 @@ type Phase =
  * The pure "renderer" half: turns a PopupModal into DOM. Knows nothing about
  * triggers, frequency, or how it got mounted — that is the mount layer's job.
  */
+/** Submit key of an input — mirrors the request builder's key resolution. */
+function itemKey(item: ContentItem): string {
+  return item.onSubmitRequest?.key ?? (item.type === 'email' ? 'email' : item.id);
+}
+
+/**
+ * Seed private inputs from the page URL's query string (matched by submit key),
+ * so a value passed in the link — e.g. ?ref=abc — flows straight into the form.
+ */
+function seedPrivateValues(popup: PopupModal): FormValues {
+  if (typeof window === 'undefined') return {};
+  const params = new URLSearchParams(window.location.search);
+  const seed: FormValues = {};
+  for (const item of popup.contentItems) {
+    if (!item.private) continue;
+    const raw = params.get(itemKey(item));
+    if (raw === null) continue;
+    seed[item.id] = item.type === 'checkbox' ? raw === 'true' || raw === '1' : raw;
+  }
+  return seed;
+}
+
 export function PopupContent({ popup, onClose, fetchImpl, preview, onItemActivate }: PopupContentProps) {
-  const [values, setValues] = useState<FormValues>({});
+  const [values, setValues] = useState<FormValues>(() => seedPrivateValues(popup));
   const [phase, setPhase] = useState<Phase>({ kind: 'form' });
   const [submitting, setSubmitting] = useState(false);
 
@@ -102,6 +124,8 @@ export function PopupContent({ popup, onClose, fetchImpl, preview, onItemActivat
   }, [phase, onClose]);
 
   function renderItem(item: ContentItem) {
+    // Private inputs are never shown; their value rides along from the URL.
+    if (item.private) return null;
     const style = toStyle(item.styleProps); // heading / text — respects global alignment
     const fieldStyle = toStyle(item.styleProps, 'start'); // input labels — left/right by direction
     const buttonStyle = toStyle(item.styleProps, 'center'); // submit button — always centered

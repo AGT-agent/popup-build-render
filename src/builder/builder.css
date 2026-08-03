@@ -386,6 +386,11 @@ body {
   color: var(--danger);
   margin-top: 4px;
 }
+/* Quiet inline microcopy next to a control (e.g. the Private toggle). */
+.field-hint {
+  font-size: 11px;
+  color: var(--muted);
+}
 input.invalid,
 input.invalid:focus {
   border-color: var(--danger);
@@ -454,6 +459,24 @@ button:hover {
 .item-card:hover {
   border-color: color-mix(in srgb, var(--accent) 40%, var(--border));
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.06);
+}
+/* Private field: present but hidden from the rendered popup — shown dimmed with
+   an eye-off marker, and restored to full opacity on hover for editing. */
+.item-card.private {
+  opacity: 0.6;
+  border-style: dashed;
+}
+.item-card.private:hover {
+  opacity: 1;
+}
+.item-private-icon {
+  display: inline-flex;
+  margin-inline-start: 4px;
+  color: var(--muted);
+}
+.item-private-icon svg {
+  width: 13px;
+  height: 13px;
 }
 /* Flash played when a preview field is clicked, to point out its editor. */
 .item-card.field-flash {

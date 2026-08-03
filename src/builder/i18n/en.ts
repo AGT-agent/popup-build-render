@@ -111,6 +111,8 @@ export const en = {
     color: 'Color',
     backgroundColor: 'Background color',
     required: 'Required',
+    private: 'Private',
+    privateHint: 'Hidden from the popup; value comes from the page URL.',
     submitKey: 'Submit key',
     options: 'Options',
     optionLabel: 'label',

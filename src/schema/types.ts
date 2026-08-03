@@ -77,6 +77,13 @@ export interface ContentItem {
   styleProps?: StyleProps;
   options?: PopupOption[];
   required?: boolean;
+  /**
+   * Inputs only. A private input is never shown in the rendered popup — its
+   * value is seeded from the page URL's query string (matched by submit key),
+   * so it's handy for carrying a ref/tracking code through the form. In the
+   * builder it still appears, dimmed, so authors can see and configure it.
+   */
+  private?: boolean;
   onSubmitRequest?: OnSubmitRequest;
 }
 
