@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { makeExamplePopup, makePopup, type PopupModal } from '@schema';
+import { makeExamplePopup, makePopup, type PopupDirection, type PopupModal } from '@schema';
 
 export interface BuilderState {
   /** The saved popups — the array you pull out to send as JSON to the renderer. */
@@ -23,7 +23,11 @@ export interface BuilderState {
   clearActive: () => void;
   /** Toggle single-vs-array export. Turning it on trims Active down to one. */
   setSingleMode: (on: boolean) => void;
-  createPopup: (fromExample?: boolean) => string;
+  /** `direction` seeds the new popup's own text direction — pass the builder's
+   *  UI direction so a Hebrew editor defaults its popups to RTL. */
+  createPopup: (fromExample?: boolean, direction?: PopupDirection) => string;
+  /** Add a fully-formed popup (e.g. from a gallery template) and open it. */
+  addPopup: (popup: PopupModal) => string;
   updatePopup: (id: string, patch: Partial<PopupModal>) => void;
   /** Replace a popup wholesale (used by the raw-JSON editor and full-object edits). */
   replacePopup: (id: string, next: PopupModal) => void;
@@ -59,8 +63,13 @@ export const useBuilderStore = create<BuilderState>()(
           activeIds: on ? s.activeIds.slice(0, 1) : s.activeIds,
         })),
 
-      createPopup: (fromExample = false) => {
-        const popup = fromExample ? makeExamplePopup() : makePopup();
+      createPopup: (fromExample = false, direction) => {
+        const popup = fromExample ? makeExamplePopup(direction) : makePopup(undefined, direction);
+        set((s) => ({ popups: [...s.popups, popup], selectedId: popup.id }));
+        return popup.id;
+      },
+
+      addPopup: (popup) => {
         set((s) => ({ popups: [...s.popups, popup], selectedId: popup.id }));
         return popup.id;
       },
@@ -108,9 +117,10 @@ export function getAllPopups(): PopupModal[] {
   return useBuilderStore.getState().popups;
 }
 
-/** Selector for every Active popup, in list order — the multi-template handoff. */
+/** Selector for every Active popup, in list order — the multi-template handoff.
+ *  Every saved popup is active, so this is just the full list. */
 export function selectActivePopups(s: BuilderState): PopupModal[] {
-  return s.popups.filter((p) => s.activeIds.includes(p.id));
+  return s.popups;
 }
 
 /** Selector for the single Active popup (the first, in single mode the only one). */

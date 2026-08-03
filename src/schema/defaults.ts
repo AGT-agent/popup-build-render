@@ -1,4 +1,5 @@
-import type { ContentItem, ContentType, PopupModal } from './types';
+import type { ContentItem, ContentType, CustomFieldDef, PopupDirection, PopupModal } from './types';
+import { customFieldContentType } from './types';
 
 // Deterministic id generator. Kept dependency-free; unique enough for authoring.
 let counter = 0;
@@ -54,37 +55,96 @@ export function makeContentItem(type: ContentType, order: number): ContentItem {
   }
 }
 
-/** A new, empty popup with sensible defaults. */
-export function makePopup(name = 'Untitled popup'): PopupModal {
+/**
+ * A content item pre-filled from a host-supplied custom field. Starts from the
+ * blank item for the mapped type, then locks the submit `key` to the field's
+ * (the host's source of truth) and carries over its label, options, and
+ * required flag.
+ */
+export function makeContentItemFromField(field: CustomFieldDef, order: number): ContentItem {
+  const type = customFieldContentType(field.type);
+  const base = makeContentItem(type, order);
+  return {
+    ...base,
+    value: field.label,
+    required: field.required ?? base.required,
+    options: field.type === 'radio' ? (field.options ?? base.options) : base.options,
+    onSubmitRequest: { target: base.onSubmitRequest?.target ?? 'body', key: field.key },
+  };
+}
+
+/**
+ * A new popup with attractive defaults: the `image-behind` design, a neutral
+ * image, rounded corners, and generic starter copy. Looks good out of the box
+ * while staying easy to rewrite for the host's own campaign.
+ */
+export function makePopup(name = 'Untitled popup', direction?: PopupDirection): PopupModal {
   return {
     id: makeId('popup'),
     name,
     url: 'https://example.com/api/subscribe',
     method: 'POST',
     trigger: { type: 'immediate' },
-    design: 'basic',
+    design: 'image-behind',
+    imageUrl: 'https://images.unsplash.com/photo-1557683316-973673baf926?w=800&q=80',
+    borderRadius: 18,
     dismissible: true,
     frequency: 'always',
+    ...(direction ? { direction } : {}),
     contentItems: [
-      makeContentItem('heading', 0),
-      makeContentItem('email', 1),
-      makeContentItem('submit-button', 2),
+      {
+        id: makeId('heading'),
+        order: 0,
+        type: 'heading',
+        // No color: image-behind renders the body text white over the scrim.
+        value: 'Join our newsletter',
+        styleProps: { align: 'center' },
+      },
+      {
+        id: makeId('text'),
+        order: 1,
+        type: 'text',
+        value: 'Sign up to get the latest news and offers.',
+        styleProps: { align: 'center' },
+      },
+      {
+        id: makeId('email'),
+        order: 2,
+        type: 'email',
+        value: 'Your email',
+        required: true,
+        onSubmitRequest: { target: 'body', key: 'email' },
+      },
+      {
+        id: makeId('submit-button'),
+        order: 3,
+        type: 'submit-button',
+        value: 'Subscribe',
+        // White CTA pops against the photo; dark label keeps it readable.
+        styleProps: { backgroundColor: '#ffffff', color: '#111827' },
+      },
     ],
   };
 }
 
-/** The worked example from the schema doc — handy as a starter template. */
-export function makeExamplePopup(): PopupModal {
+/**
+ * A polished, ready-to-show starter template: a full-bleed image with the form
+ * laid over it (the `image-behind` design), warm copy, and a crisp white CTA.
+ * Handy as the "this is what good looks like" example.
+ */
+export function makeExamplePopup(direction?: PopupDirection): PopupModal {
   return {
     id: makeId('welcome'),
-    name: 'Welcome 15% off',
+    name: 'Welcome offer',
     url: 'https://shop.example.com/api/subscribe',
     method: 'POST',
     trigger: { type: 'delay', seconds: 5 },
-    design: 'image-right',
-    imageUrl: 'https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?w=600',
+    design: 'image-behind',
+    imageUrl: 'https://images.unsplash.com/photo-1483985988355-763728e1935b?w=800&q=80',
+    borderRadius: 18,
     dismissible: true,
     frequency: 'session',
+    ...(direction ? { direction } : {}),
     onSuccess: {
       type: 'coupon',
       text: "You're in! Use this at checkout:",
@@ -97,12 +157,20 @@ export function makeExamplePopup(): PopupModal {
         id: makeId('h'),
         order: 0,
         type: 'heading',
+        // No color set: image-behind renders the body text white over the scrim.
         value: 'Get 15% off your first order',
-        styleProps: { align: 'center', color: '#111827' },
+        styleProps: { align: 'center' },
+      },
+      {
+        id: makeId('t'),
+        order: 1,
+        type: 'text',
+        value: 'Join the list for early access to new drops and members-only deals.',
+        styleProps: { align: 'center' },
       },
       {
         id: makeId('e'),
-        order: 1,
+        order: 2,
         type: 'email',
         value: 'Your email',
         required: true,
@@ -110,12 +178,19 @@ export function makeExamplePopup(): PopupModal {
       },
       {
         id: makeId('c'),
-        order: 2,
+        order: 3,
         type: 'checkbox',
         value: 'Email me deals',
         onSubmitRequest: { target: 'body', key: 'marketingOptIn' },
       },
-      { id: makeId('btn'), order: 3, type: 'submit-button', value: 'Claim my discount' },
+      {
+        id: makeId('btn'),
+        order: 4,
+        type: 'submit-button',
+        value: 'Claim my discount',
+        // White CTA pops against the photo; dark label keeps it readable.
+        styleProps: { backgroundColor: '#ffffff', color: '#111827' },
+      },
     ],
   };
 }

@@ -1,15 +1,17 @@
-import { useState } from 'react';
+import { useState, type JSX } from 'react';
 import {
-  CONTENT_TYPES,
   URL_TOKEN_HINT,
   isInputType,
   isUrlSafeToken,
   makeContentItem,
+  makeContentItemFromField,
   type ContentItem,
   type ContentType,
+  type CustomFieldDef,
   type PopupModal,
   type RequestTarget,
 } from '@schema';
+import { FieldPicker, ICONS } from './FieldPicker';
 import { useT, type Strings } from '../i18n';
 
 interface Props {
@@ -19,6 +21,7 @@ interface Props {
 
 export function ContentItemsEditor({ popup, onChange }: Props) {
   const t = useT();
+  const [picking, setPicking] = useState(false);
   const items = [...popup.contentItems].sort((a, b) => a.order - b.order);
 
   const commit = (next: ContentItem[]) => {
@@ -32,6 +35,10 @@ export function ContentItemsEditor({ popup, onChange }: Props) {
 
   const addItem = (type: ContentType) => {
     commit([...items, makeContentItem(type, items.length)]);
+  };
+
+  const addField = (field: CustomFieldDef) => {
+    commit([...items, makeContentItemFromField(field, items.length)]);
   };
 
   const updateItem = (id: string, patch: Partial<ContentItem>) => {
@@ -48,53 +55,40 @@ export function ContentItemsEditor({ popup, onChange }: Props) {
     commit(next);
   };
 
+  // The list and the field menu occupy the same spot; toggling `picking` swaps
+  // them with a slide-in animation (see .field-menu / .layout-list in the CSS).
   return (
-    <div className="section">
-      <h3>{t.content.heading}</h3>
-
-      {items.map((item, i) => (
-        <ItemCard
-          key={item.id}
-          item={item}
-          index={i}
-          count={items.length}
-          onMove={move}
-          onRemove={removeItem}
-          onUpdate={updateItem}
+    <div className="section layout-editor">
+      {picking ? (
+        <FieldPicker
+          key="menu"
+          onAddType={addItem}
+          onAddField={addField}
+          onClose={() => setPicking(false)}
         />
-      ))}
+      ) : (
+        <div key="list" className="layout-list">
+          <h3>{t.content.heading}</h3>
 
-      <AddSectionButton onAdd={addItem} />
-    </div>
-  );
-}
-
-function AddSectionButton({ onAdd }: { onAdd: (type: ContentType) => void }) {
-  const t = useT();
-  const [open, setOpen] = useState(false);
-
-  return (
-    <div className="add-section">
-      {open && <div className="add-backdrop" onClick={() => setOpen(false)} />}
-      {open && (
-        <div className="add-menu-popover">
-          {/* Submit button is mandatory and always present — not addable. */}
-          {CONTENT_TYPES.filter((t) => t !== 'submit-button').map((t) => (
-            <button
-              key={t}
-              onClick={() => {
-                onAdd(t);
-                setOpen(false);
-              }}
-            >
-              {t}
-            </button>
+          {items.map((item, i) => (
+            <ItemCard
+              key={item.id}
+              item={item}
+              index={i}
+              count={items.length}
+              onMove={move}
+              onRemove={removeItem}
+              onUpdate={updateItem}
+            />
           ))}
+
+          <div className="add-section">
+            <button className="add-plus" onClick={() => setPicking(true)}>
+              {t.content.addSection}
+            </button>
+          </div>
         </div>
       )}
-      <button className="add-plus" aria-label={t.content.addSectionAria} onClick={() => setOpen((o) => !o)}>
-        {t.content.addSection}
-      </button>
     </div>
   );
 }
@@ -115,13 +109,16 @@ function ItemCard({ item, index, count, onMove, onRemove, onUpdate }: ItemCardPr
   return (
     <div className="item-card">
       <div className="item-head">
-        <span className="item-type">{item.type}</span>
+        <span className="item-type-chip">
+          <span className="item-type-icon" aria-hidden="true">{ICONS[item.type]}</span>
+          {t.enums.content[item.type]}
+        </span>
         <div className="item-order-btns">
           {item.type !== 'submit-button' && (
             <>
-              <button className="ghost" disabled={index === 0} onClick={() => onMove(index, -1)}>↑</button>
-              <button className="ghost" disabled={index === count - 1} onClick={() => onMove(index, 1)}>↓</button>
-              <button className="ghost danger" onClick={() => onRemove(item.id)}>✕</button>
+              <button className="icon-btn" title="↑" disabled={index === 0} onClick={() => onMove(index, -1)} aria-label="up">{ARROW_UP}</button>
+              <button className="icon-btn" title="↓" disabled={index === count - 1} onClick={() => onMove(index, 1)} aria-label="down">{ARROW_DOWN}</button>
+              <button className="icon-btn danger" onClick={() => onRemove(item.id)} aria-label="remove">{TRASH}</button>
             </>
           )}
         </div>
@@ -162,44 +159,8 @@ function ItemCard({ item, index, count, onMove, onRemove, onUpdate }: ItemCardPr
         </div>
       )}
 
-      {/* Align applies to every text-bearing section; color/background stay
-          scoped to the types that actually render them. Spacer has no text. */}
-      {item.type !== 'spacer' && (
-        <div className="field-grid">
-          <div className="field-row">
-            <label>{t.content.align}</label>
-            <select
-              value={item.styleProps?.align ?? 'center'}
-              onChange={(e) => onUpdate(item.id, { styleProps: { ...item.styleProps, align: e.target.value as 'left' | 'center' | 'right' } })}
-            >
-              <option value="left">left</option>
-              <option value="center">center</option>
-              <option value="right">right</option>
-            </select>
-          </div>
-          {(item.type === 'heading' || item.type === 'text' || item.type === 'submit-button') && (
-            <div className="field-row">
-              <label>{t.content.color}</label>
-              <input
-                type="text"
-                placeholder="#111827"
-                value={item.styleProps?.color ?? ''}
-                onChange={(e) => onUpdate(item.id, { styleProps: { ...item.styleProps, color: e.target.value || undefined } })}
-              />
-            </div>
-          )}
-          {item.type === 'submit-button' && (
-            <div className="field-row">
-              <label>{t.content.backgroundColor}</label>
-              <input
-                type="text"
-                value={item.styleProps?.backgroundColor ?? ''}
-                onChange={(e) => onUpdate(item.id, { styleProps: { ...item.styleProps, backgroundColor: e.target.value || undefined } })}
-              />
-            </div>
-          )}
-        </div>
-      )}
+      {/* Colours and alignment live in the global Design tab now, so the field
+          block stays focused on content. */}
 
       {item.type === 'radio' && <RadioOptions item={item} onUpdate={onUpdate} />}
 
@@ -217,13 +178,19 @@ function ItemCard({ item, index, count, onMove, onRemove, onUpdate }: ItemCardPr
           <div className="field-grid">
             <div className="field-row">
               <label>{t.content.submitTarget}</label>
-              <select
-                value={item.onSubmitRequest?.target ?? 'body'}
-                onChange={(e) => onUpdate(item.id, { onSubmitRequest: { ...item.onSubmitRequest, target: e.target.value as RequestTarget } })}
-              >
-                <option value="body">body</option>
-                <option value="query">query</option>
-              </select>
+              <div className="seg-toolbar" role="group">
+                {(['body', 'query'] as RequestTarget[]).map((target) => (
+                  <button
+                    key={target}
+                    type="button"
+                    className={`seg-btn text${(item.onSubmitRequest?.target ?? 'body') === target ? ' active' : ''}`}
+                    aria-pressed={(item.onSubmitRequest?.target ?? 'body') === target}
+                    onClick={() => onUpdate(item.id, { onSubmitRequest: { ...item.onSubmitRequest, target } })}
+                  >
+                    {target}
+                  </button>
+                ))}
+              </div>
             </div>
             <div className="field-row">
               <label>{t.content.submitKey}</label>
@@ -295,3 +262,15 @@ function labelFor(t: Strings, type: ContentType): string {
     default: return t.content.valueLabel;
   }
 }
+
+// --- Icons -----------------------------------------------------------------
+// 16px line icons sharing the stroke style of the picker/tab-bar icons.
+const icon = (children: JSX.Element) => (
+  <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    {children}
+  </svg>
+);
+
+const ARROW_UP = icon(<><path d="M12 19V5M5 12l7-7 7 7" /></>);
+const ARROW_DOWN = icon(<><path d="M12 5v14M19 12l-7 7-7-7" /></>);
+const TRASH = icon(<><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6" /></>);

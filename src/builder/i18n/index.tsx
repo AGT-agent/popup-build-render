@@ -33,3 +33,11 @@ export function useT(): Strings {
 export function useLang(): Lang {
   return useContext(LangContext).lang;
 }
+
+/**
+ * The builder's own text direction. Matches the `PopupDirection` values, so it
+ * can seed a new popup's direction — a Hebrew editor defaults its popups to RTL.
+ */
+export function useDir(): 'ltr' | 'rtl' {
+  return isRtl(useLang()) ? 'rtl' : 'ltr';
+}
