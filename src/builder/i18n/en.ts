@@ -105,6 +105,7 @@ export const en = {
     placeholder: 'Placeholder',
     checkboxLabel: 'Checkbox label',
     valueLabel: 'Value',
+    hiddenValue: 'Value to send',
     groupLabel: 'Group label',
     align: 'Align',
     color: 'Color',
@@ -145,6 +146,7 @@ export const en = {
       radio: 'Pick one — no pressure.',
       checkbox: "The classic 'yes, I'm in.'",
       'free-text-input': 'Let them say it their way.',
+      hidden: 'Sent with the form, never shown.',
       'submit-button': 'The big moment.',
     },
   },
@@ -197,6 +199,7 @@ export const en = {
       radio: 'Radio group',
       checkbox: 'Checkbox',
       'free-text-input': 'Text field',
+      hidden: 'Hidden field',
       'submit-button': 'Submit button',
     },
     align: {

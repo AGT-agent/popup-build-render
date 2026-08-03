@@ -11,7 +11,9 @@ interface Props {
 
 // Layout/display pieces are always addable. Generic inputs are only shown in
 // standalone mode — in integration mode the host's own fields take their place.
-const LAYOUT_TYPES: ContentType[] = ['heading', 'text', 'spacer'];
+// `hidden` lives here so it's addable in both standalone and integration mode:
+// it isn't a visible input, just a fixed value carried along with the submit.
+const LAYOUT_TYPES: ContentType[] = ['heading', 'text', 'spacer', 'hidden'];
 const INPUT_TYPES: ContentType[] = ['email', 'free-text-input', 'radio', 'checkbox'];
 const CREATE_TYPES: CustomFieldType[] = ['text', 'email', 'radio', 'checkbox'];
 
@@ -322,6 +324,14 @@ export const ICONS: Record<ContentType, JSX.Element> = {
     <>
       <rect x="3" y="7" width="18" height="10" rx="2" />
       <path d="M7 12h6" />
+    </>,
+  ),
+  // Eye-off: value sent but never shown.
+  hidden: svg(
+    <>
+      <path d="M9.9 4.24A9.1 9.1 0 0 1 12 4c7 0 10 8 10 8a13.2 13.2 0 0 1-1.67 2.68M6.6 6.6A13.3 13.3 0 0 0 2 12s3 8 10 8a9.1 9.1 0 0 0 5.4-1.6" />
+      <path d="M9.9 9.9a3 3 0 0 0 4.2 4.2" />
+      <path d="m2 2 20 20" />
     </>,
   ),
   'submit-button': svg(

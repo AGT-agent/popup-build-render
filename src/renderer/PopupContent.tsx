@@ -112,6 +112,9 @@ export function PopupContent({ popup, onClose, fetchImpl, preview, onItemActivat
         return <p key={item.id} data-pm-item={item.id} className="pm-text" style={style}>{item.value}</p>;
       case 'spacer':
         return <div key={item.id} data-pm-item={item.id} className="pm-spacer" style={{ height: item.height ?? 16 }} aria-hidden />;
+      case 'hidden':
+        // Submitted with the form but never shown.
+        return null;
       case 'email':
         return (
           <label key={item.id} data-pm-item={item.id} className="pm-field" style={fieldStyle}>

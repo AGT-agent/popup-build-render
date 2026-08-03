@@ -103,6 +103,7 @@ export const he: Strings = {
     placeholder: "טקסט מציין מיקום",
     checkboxLabel: "תווית תיבת סימון",
     valueLabel: "ערך",
+    hiddenValue: "ערך לשליחה",
     groupLabel: "תווית קבוצה",
     align: "יישור",
     color: "צבע",
@@ -140,6 +141,7 @@ export const he: Strings = {
       radio: "בחרו אחת — בלי לחץ.",
       checkbox: "הקלאסי: 'כן, אני בפנים.'",
       "free-text-input": "תנו להם להגיד את זה במילים שלהם.",
+      hidden: "נשלח עם הטופס, לא מוצג.",
       "submit-button": "הרגע הגדול.",
     },
   },
@@ -189,6 +191,7 @@ export const he: Strings = {
       radio: "קבוצת בחירה",
       checkbox: "תיבת סימון",
       "free-text-input": "שדה טקסט",
+      hidden: "שדה מוסתר",
       "submit-button": "כפתור שליחה",
     },
     align: {

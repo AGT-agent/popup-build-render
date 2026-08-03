@@ -38,6 +38,7 @@ export type ContentType =
   | 'radio'
   | 'checkbox'
   | 'free-text-input'
+  | 'hidden'
   | 'submit-button';
 
 export interface StyleProps {
@@ -70,7 +71,7 @@ export interface ContentItem {
   id: string;
   order: number;
   type: ContentType;
-  value?: string;
+  value?: string; // for `hidden`, this is the fixed value submitted with the form
   placeholder?: string; // email / free-text-input only — input placeholder, independent of the label
   height?: number; // spacer only — vertical gap in px
   styleProps?: StyleProps;
@@ -162,7 +163,11 @@ export interface PopupModal {
   contentItems: ContentItem[];
 }
 
-/** Content types that collect a value and contribute to the submit request. */
+/**
+ * Content types that collect a value *from the visitor*. `hidden` also
+ * contributes to the submit request but carries a fixed, author-set value with
+ * no visible input, so it is intentionally not listed here.
+ */
 export const INPUT_TYPES: ContentType[] = ['email', 'radio', 'checkbox', 'free-text-input'];
 
 export const CONTENT_TYPES: ContentType[] = [
@@ -173,6 +178,7 @@ export const CONTENT_TYPES: ContentType[] = [
   'radio',
   'checkbox',
   'free-text-input',
+  'hidden',
   'submit-button',
 ];
 

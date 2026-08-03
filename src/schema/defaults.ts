@@ -48,6 +48,9 @@ export function makeContentItem(type: ContentType, order: number): ContentItem {
         ],
         onSubmitRequest: { key: 'choice' },
       };
+    case 'hidden':
+      // No visible input: carries a fixed value under an author-set key.
+      return { ...base, value: '', onSubmitRequest: { key: 'source' } };
     case 'submit-button':
       return { ...base, value: 'Submit' };
     default:

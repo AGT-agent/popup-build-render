@@ -21,6 +21,9 @@ function resolveItemValue(item: ContentItem, values: FormValues): string | boole
     case 'free-text-input':
     case 'radio':
       return raw === undefined ? '' : String(raw);
+    case 'hidden':
+      // Not user-editable: the value comes from the item, not the form state.
+      return item.value ?? '';
     default:
       return undefined;
   }

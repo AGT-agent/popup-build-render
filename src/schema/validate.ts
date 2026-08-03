@@ -45,7 +45,7 @@ function validateContentItem(item: ContentItem, index: number, issues: Validatio
     });
   }
 
-  if (isInputType(item.type)) {
+  if (isInputType(item.type) || item.type === 'hidden') {
     const req = item.onSubmitRequest;
     // email defaults its key to "email"; every other input must declare one.
     if (item.type !== 'email' && req && !req.key) {

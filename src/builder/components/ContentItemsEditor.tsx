@@ -210,6 +210,22 @@ function ItemCard({ item, index, count, onMove, onRemove, onUpdate }: ItemCardPr
           </div>
         </>
       )}
+
+      {item.type === 'hidden' && (
+        <div className="field-row">
+          <label>{t.content.submitKey}</label>
+          <input
+            type="text"
+            className={item.onSubmitRequest?.key && !isUrlSafeToken(item.onSubmitRequest.key) ? 'invalid' : undefined}
+            placeholder="key"
+            value={item.onSubmitRequest?.key ?? ''}
+            onChange={(e) => onUpdate(item.id, { onSubmitRequest: { key: e.target.value || undefined } })}
+          />
+          {item.onSubmitRequest?.key && !isUrlSafeToken(item.onSubmitRequest.key) && (
+            <span className="field-error">{URL_TOKEN_HINT}</span>
+          )}
+        </div>
+      )}
     </div>
   );
 }
@@ -261,6 +277,7 @@ function labelFor(t: Strings, type: ContentType): string {
     case 'email': return t.content.fieldLabel;
     case 'free-text-input': return t.content.fieldLabel;
     case 'checkbox': return t.content.checkboxLabel;
+    case 'hidden': return t.content.hiddenValue;
     default: return t.content.valueLabel;
   }
 }
